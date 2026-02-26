@@ -1,9 +1,0 @@
-services:
-  easyverify:
-    image: easyverify
-    build:
-      context: .
-      dockerfile: ./client/Dockerfile
-    ports:
-      - 5002:5002
-      - 5000:5000
