@@ -1,7 +1,13 @@
-import interface
+
+from event.uriEvent import register_uri
+import os
 
 def main():
-    interface.generateInterface()
+    register_uri("easy-verify", "main.exe")
+    input("test")
+
+
+    
 
 if __name__ == '__main__':
     main()
