@@ -5,5 +5,6 @@ dist/
 .idea
 .DS_Store
 .env.local
+*toc
 
 node_modules

@@ -1,5 +1,8 @@
 from deepface import DeepFace
 import cv2
+import easycor
+import re
+from datetime import datetime
 
 """
 I've decied this doesn't need OOP
@@ -60,3 +63,7 @@ def verify_user_id(img1, img2)->bool:
         pass
     except Exception:
         pass
+
+def extract_dob(img1):
+    "This will extract DOB from an ID"
+    
