@@ -41,3 +41,22 @@ def estimate_age(img1, img2, img3)-> int:
     final_guess = round(sum(estimate_age) / len(estimate_age))
 
     return final_guess
+
+def verify_user_id(img1, img2)->bool:
+    """
+    Compres user id img to the img they recently took
+    this will just return a bool
+    """
+    try:
+        """
+        TODO:
+        Test differnt verfication models 
+        """
+        analysis =  DeepFace.verify(img1_path=img1, img2_path=img2, model_name="VGG-face", detector_backend="retinaface", enforce_detection=True)
+        
+        return analysis["verified"]
+
+    except ValueError:
+        pass
+    except Exception:
+        pass
