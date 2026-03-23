@@ -4,7 +4,15 @@ gunicorn==21.2.0
 deepface
 tensorflow
 opencv-python
-pycurl
+requests
+# pycurl
 websockets
 sv-ttk
+
 pyinstaller
+
+#needed for pyinstaller to convert the icon for the executable
+pillow
+#run async operations alongside
+tkinter-async-execute
+

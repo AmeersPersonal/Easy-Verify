@@ -1,11 +1,14 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+added_files = [
+    ('assets', 'assets')
+];
 
 a = Analysis(
-    ['main.py'],
+    ['main.pyw'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=added_files,
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -14,6 +17,7 @@ a = Analysis(
     noarchive=False,
     optimize=0,
 )
+
 pyz = PYZ(a.pure)
 
 exe = EXE(
