@@ -6,7 +6,7 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
 
-export default function ButtonAppBar() {
+export default function NavBar({ buttonLabel, buttonAction}) {
     return (
         <Box sx={{ flexGrow: 1 }}>
             <AppBar position="static">
@@ -23,7 +23,7 @@ export default function ButtonAppBar() {
                     <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                         Development.co
                     </Typography>
-                    <Button color="inherit">Login</Button>
+                    <Button color="inherit" onClick={buttonAction}>{buttonLabel}</Button>
                 </Toolbar>
             </AppBar>
         </Box>
