@@ -1,14 +1,22 @@
-import { useWebSocket } from "./WebSocketHandler";
 import { useState } from "react";
+import { useWebSocket } from "./WebSocketHandler";
 
-const [socket, send, setStartConnect] = useWebSocket("ws://localhost:8765"); // Use the custom hook to establish a WebSocket connection to the specified URL and get the reference to the WebSocket instance
+export function useVerification(url = "ws://localhost:8765") {
+  const [, send, setStartConnect] = useWebSocket(url);
+  const [clickText, setClickText] = useState("");
 
-export const startVerify = (name) => {
+  const startVerify = (name) => {
     setClickText("Verifying...");
     window.open("easy-verify://verifyDemoClient");
-    setStartConnect(true); // Start the WebSocket connection when the user initiates verification
-    setTimeout(() => send(name), 1000); // Send the name through the WebSocket connection using the sendMessage function
+    setStartConnect(true);
+    setTimeout(() => send(name), 1000);
     setClickText(
-        "Verification request sent! Please check your Easy Verify app.",
+      "Verification request sent! Please check your Easy Verify app.",
     );
-};
+  };
+
+  return {
+    clickText,
+    startVerify,
+  };
+} 
