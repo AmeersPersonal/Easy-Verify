@@ -16,10 +16,11 @@ function WebSocketVerifyPage() {
   }
 
   return (
-    <>
-      <div>
+    <div className="flex flex-col items-center justify-center min-h-screen">
+      <div className="max-w-7xl mx-auto p-8 text-center">
         <img src="/icon.png" width={400} height={400} />
-        <h1>Access Content Below</h1> <br />
+        <h1 className="text-5xl leading-tight">Access Content Below</h1>
+        <br />
         <form onSubmit={handleSubmit}>
           <input
             name="name"
@@ -27,11 +28,16 @@ function WebSocketVerifyPage() {
             onChange={changeName}
           />{" "}
           <br />
-          <button type="submit">Verify</button>
+          <button
+            type="submit"
+            className="rounded-lg border border-transparent px-5 py-2.5 text-base font-medium bg-[#1a1a1a] cursor-pointer transition-colors duration-[250ms] hover:border-[#646cff] focus-visible:outline focus-visible:outline-4"
+          >
+            Verify
+          </button>
         </form>
         <h3>{clickText}</h3>
       </div>
-    </>
+    </div>
   );
 }
 
