@@ -1,28 +1,33 @@
 const express = require('express')
-//const fs = require("fs")
-//const https = require("https")
+const jwt = require('jsonwebtoken')
+const bcrypt = require('bcrypt')
 
 const app = express();
 app.use(express.json());
 
+const JWT_SECRET = process.env.JWT_SECRET;
+
 // define routes
-app.get('/api/verification', (req, res) => {
-    res.send("another test");
-});
+app.post("/api/login", async (req, res) => {
+    const { email, password } = req.body;
 
-// https://express-validator.github.io/docs/guides/getting-started //use this 
-const validateRequest = (req, res, next) => {
-    console.log(req.body);
+    // Implement 404 status as of right now to simulate always creating a new user
+    return res.status(404)
 
 
-    next(); //keep moving after validation
-}
+    // const passwordHash = await findPasswordHashByEmail(email); // TODO: implement DB query
+    // if (!passwordHash) {
+    //     return res.status(404).json({ message: "No account associated with that email" });
+    // }
 
-app.post('/api/post', validateRequest, (req, res) => {
+    // const passwordMatch = await bcrypt.compare(password, passwordHash);
+    // if (!passwordMatch) {
+    //     return res.status(401).json({ message: "Invalid email or password" });
+    // }
 
-    //console.dir(req.body);
-    res.json({Response: "Test"});
-});
+    // const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: '7d' });
+    // return res.status(200).json({ token, email });
+})
 
 app.listen(3000)
 
