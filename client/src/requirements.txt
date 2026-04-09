@@ -15,4 +15,5 @@ pyinstaller
 pillow
 #run async operations alongside
 tkinter-async-execute
-
+# cryptography
+cryptography

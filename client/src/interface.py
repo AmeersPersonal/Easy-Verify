@@ -4,19 +4,20 @@ from tkinter import ttk
 import cv2
 from util.resources import resource_path
 from PIL import ImageTk, Image
-from util.webSocketHandler import connectionStatus, setConnectionStatus;
 import tk_async_execute as tae
-from util.webSocketHandler import openSocket;
+from util.webSocketHandler import openSocket
 
 import sv_ttk
 
 root = None
+currentConnection = None
 
 def runWebsocket():
-    tae.async_execute(openSocket(), visible=False,pop_up=False, master=root) 
+    global currentConnection
+    currentConnection = tae.async_execute(openSocket(), visible=False,pop_up=False, master=root) 
 
 def exitProgram():
-    # tae.async_execute(setConnectionStatus(False), visible=False,pop_up=False, master=root) # set connection status to false so the websocket server can close itself gracefully
+    
     root.destroy()
 
 
@@ -47,7 +48,7 @@ def generateInterface():
     root = tkinter.Tk() #Tkinter Setup, this is the main window of the application 
     root.title("EasyVerify")
     root.geometry("1280x720")
-    root.iconphoto(False, tkinter.PhotoImage(file=resource_path("assets/icon.png")))
+    root.iconphoto(False, tkinter.PhotoImage(file=resource_path("assets\\icon.png")))
 
     actionsLabel = ttk.Label(root, text="Welcome to EasyVerify").pack()
 
@@ -60,8 +61,9 @@ def generateInterface():
     
     tae.start()
     root.after(0, runWebsocket) # start the websocket server in the background so we can receive messages from the browser and update the UI accordingly
+    # root.after(10,cameraAction)
     root.protocol("WM_DELETE_WINDOW", exitProgram) #cleanup the websocket after closing the application
-    cameraAction()
+    # cameraAction()
     root.mainloop()
     tae.stop()
 

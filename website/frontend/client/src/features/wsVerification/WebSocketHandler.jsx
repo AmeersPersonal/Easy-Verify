@@ -1,92 +1,118 @@
-import { useState } from "react";
-import { useEffect } from "react";
-import { useCallback } from "react";
-import { useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { JSEncrypt } from "jsencrypt";
 
-export function useWebSocket(url) {
-  const attemptCountRef = useRef(0); // Ref to track the number of connection attempts
-  const reconnectCountRef = useRef(0); // Ref to track the number of reconnection attempts
-  const socketRef = useRef(null); //initialize the reference to hold the WebSocket instance
-  const [startConnect, setStartConnect] = useState(false); // State to control when to start the WebSocket connection
+export function useWebSocket(easyVerifyUrl, apiUrl) {
+  const webSocket = useRef(null); //This ref will contain the websocket instance
+  const [isSocketOpen, setSocketOpen] = useState(false);
+  const [startConnect, setStartConnect] = useState(false);
+  const [verifyStatus, setVerifyStatus] = useState(false);
+  const verifyState = useRef("Not Started");
 
-  const connectWebSocket = useCallback(() => {
-    console.log("Attempting to connect to WebSocket...");
-    socketRef.current = new WebSocket(url);
-    //connect to the WebSocket server at the specified URL and store it in a reference
-    socketRef.current.onopen = () => {
-      console.log("WebSocket connected");
+  /**
+   * the states it can be in:
+   * Await Public Key
+   * Verifying
+   * Finish
+   *
+   */
+
+  const sendMessage = useCallback((message) => {
+    try {
+      webSocket.current.send(message);
+    } catch (error) {
+      console.error("Error" + error);
+    }
+  }, []);
+
+  const connect = useCallback(() => {
+    const getAPIInfo = () => {
+      console.log(apiUrl);
     };
 
-    socketRef.current.onclose = (event) => {
+    console.log("started connection");
+    //the hooks that connect everything together
+    try {
+      webSocket.current = new WebSocket(easyVerifyUrl);
+    } catch (error) {
+      console.error(error);
+    }
+
+    webSocket.current.onopen = () => {
+      getAPIInfo();
+      console.log("socket open");
+      setSocketOpen(true);
+      verifyState.current = "Await Public Key";
+    };
+    webSocket.current.onerror = (error) => {
+      console.error("WebSocket error:", error);
+      setSocketOpen(false);
+    };
+
+    webSocket.current.onclose = (event) => {
       console.log("WebSocket disconnected");
+
       if (event.code !== 1000) {
         // Check if the closure was not normal
         console.warn(
           `WebSocket closed unexpectedly: ${event.code} - ${event.reason}`,
         );
 
-        if(reconnectCountRef.current < 5) {
-          reconnectCountRef.current += 1;
-          console.log("Attempting to reconnect...");
-          setTimeout(connectWebSocket, 500); // Attempt to reconnect after 0.5 second
+        if (verifyState.current === "Not Started") {
+          setTimeout(() => connect(), 2000); // call again after failed initial connection
         } else {
-          console.error("Failed to reconnect after multiple attempts.");
-          return;
+          alert("Connection error");
         }
       } else {
         console.log("WebSocket closed normally.");
       }
+
+      setSocketOpen(false);
     };
 
-    socketRef.current.onmessage = (event) => {
-      console.log("WebSocket message received:", event.data);
-      if (event.data === "Verification complete") {
-        alert("Verification successful! You can now access the content.");
-        socketRef.current.close(1000, "Verification Complete"); // Close the WebSocket connection with a normal closure code and reason
+    webSocket.current.onmessage = (event) => {
+      console.log(verifyState.current);
+      switch (verifyState.current) {
+        case "Await Public Key":
+          var encrypt = new JSEncrypt();
+          var publicKey = JSON.parse(event.data);
+          encrypt.setPublicKey(publicKey);
+
+          var encryptedData = encrypt.encrypt("Encryption Test");
+
+          sendMessage(encryptedData);
+          verifyState.current = "Verifying";
+          break;
+        case "Verifying":
+          if (event.data === "Verification complete") {
+            if (!verifyStatus) setVerifyStatus(true);
+            verifyState.current = "Complete";
+            webSocket.current.close(1000, "Verification Complete"); // Close the WebSocket connection with a normal closure code and reason
+          } else {
+            console.log(event.data);
+          }
+          break;
+        default:
+          console.log("Invalid State");
+          console.log(verifyState.current);
+          console.log(event.data);
+          break;
       }
     };
-
-    socketRef.current.onerror = (error) => {
-      console.error("WebSocket error:", error);
-      setStartConnect(false); // Stop trying to connect if there's an error
-    };
-  }, [socketRef, url]);
+  }, [easyVerifyUrl, sendMessage, verifyStatus, setVerifyStatus, apiUrl]);
 
   useEffect(() => {
-    if (!startConnect) return; // Only connect if startConnect is true
-
-    connectWebSocket();
-    return () => {
-      // cleanup function to close the WebSocket when the component unmounts
-      if (socketRef.current) {
-        socketRef.current.close(1000, "Component unmounted"); // Close the WebSocket connection with a normal closure code and reason
-      }
-    };
-  }, [connectWebSocket, url, startConnect]);
-
-  const send = (data) => {
-    if (socketRef.current?.readyState === WebSocket.OPEN) {
-      socketRef.current.send(JSON.stringify(data));
+    if (!startConnect) {
+      return;
     } else {
-
-      if(attemptCountRef.current >= 5) {
-        console.error("Unable to send message after multiple attempts. Please check your connection and try again.");
-        return;
-      }
-
-      console.warn(
-        "WebSocket error. Unable to send message, Attempting to resend",
-      );
-      attemptCountRef.current += 1; // Increment the attempt count
-      setTimeout(() => send(data), 500); // Attempt to resend after 0.5 second
+      connect(easyVerifyUrl);
+      return () => {
+        // cleanup function to close the WebSocket when the component unmounts
+        if (webSocket.current) {
+          webSocket.current.close(1000, "Component unmounted"); // Close the WebSocket connection with a normal closure code and reason
+        }
+      };
     }
-  };
+  }, [connect, easyVerifyUrl, startConnect]);
 
-  return [socketRef.current, send, setStartConnect]; // Return the reference to the WebSocket instance so it can be used in other components
-}
-
-export function sendMessage(message, socketRef) {
-  if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-    socketRef.current.send(message);
-  }
+  return [isSocketOpen, setStartConnect, verifyStatus];
 }

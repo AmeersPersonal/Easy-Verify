@@ -1,37 +1,45 @@
 import asyncio
 import time
 import websockets
+import json
+import base64
+from util.encryptKeys import encryptor
 
-connectionStatus = True
 
-def setConnectionStatus(status):
-    global connectionStatus
-    connectionStatus = status
-async def endWebsocket(server):
-
-    setConnectionStatus(False)
 
 async def handler(websocket):
-    #TODO: Find way to elegantly close websocket, without giving an exception in the console, when the application is closed. Currently it just prints "Connection closed" in the console which is not ideal but it works for now.
-
-    print("Client connected")
     try:
-        message = await websocket.recv()
-        print(f"Received message: {message}")
-        
-        await websocket.send(f"Message received: {message}")
-        await websocket.send("Verification complete")
+        print("Client connected")
+        print("Sending Key")
+        e = encryptor()
+        await websocket.send(json.dumps(e.getPublicKeyPEM().decode('utf-8')))
+        encryptedB64 = await websocket.recv()
+        encrypted = base64.b64decode(encryptedB64.strip())
+        apiAndAuth = e.decrypt(encrypted).decode()
+        print("got cyphertext")
+        print(apiAndAuth)
 
-    except websockets.exceptions.ConnectionClosed:
-        print("Client disconnected")
+        #INSERT THE START AND END OF VERIFICAITON HERE
+
+        #PUT AN AWAIT HERE
+        #AFTER VERIFICATION, SEND A CURL REQUEST TO THE API URL SENT BY THE apiAndAuth
+
+        #TODO:
+        await websocket.send("Verification complete")
+        print("Transaction complete")
+    except ValueError:
+        print("Key Error")
+    except Exception as err:
+        print("Unexpected error")
+        print(err)
     finally:
-        print("Connection closed")
+        await websocket.close()
+
+
 
 async def openSocket():
     print("Starting WebSocket server on ws://localhost:8765")
     async with websockets.serve(handler, "localhost", 8765) as server:
         print("WebSocket server started")
-        if (not connectionStatus):
-            print("Connection status is False, closing server")
-            await server.close()
         await server.wait_closed()  # run forever or until closed
+    return True
