@@ -5,7 +5,7 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 
 function WebSocketVerifyPage() {
-    const {startVerify, _, verifyStatus,isVerifying } = useVerification();
+    const {startVerify, isSocketOpen, verifyStatus,isVerifying } = useVerification();
 
     function handleSubmit(event) {
         event.preventDefault();
@@ -16,7 +16,7 @@ function WebSocketVerifyPage() {
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
           <img src="/icon.png" width={200} height={200} />
           <Typography variant="h4">Access Content Below</Typography>
-          {isVerifying &&
+          {isVerifying && isSocketOpen &&
             (verifyStatus ? (
               <Typography variant="h6">✅</Typography>
             ) : (

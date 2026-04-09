@@ -1,14 +1,20 @@
 import asyncio
-import time
 import websockets
 import json
 import base64
+import traceback
+import threading
 from util.encryptKeys import encryptor
 
-
+wsLoop = None
+verifyEvent = threading.Event()
+isConnected = False
 
 async def handler(websocket):
     try:
+        global isConnected
+        isConnected = True
+
         print("Client connected")
         print("Sending Key")
         e = encryptor()
@@ -19,12 +25,8 @@ async def handler(websocket):
         print("got cyphertext")
         print(apiAndAuth)
 
-        #INSERT THE START AND END OF VERIFICAITON HERE
+        verifyEvent.wait()
 
-        #PUT AN AWAIT HERE
-        #AFTER VERIFICATION, SEND A CURL REQUEST TO THE API URL SENT BY THE apiAndAuth
-
-        #TODO:
         await websocket.send("Verification complete")
         print("Transaction complete")
     except ValueError:
@@ -33,13 +35,28 @@ async def handler(websocket):
         print("Unexpected error")
         print(err)
     finally:
+        print("closing socket")
         await websocket.close()
+        stopSocket()
 
 
 
 async def openSocket():
-    print("Starting WebSocket server on ws://localhost:8765")
     async with websockets.serve(handler, "localhost", 8765) as server:
-        print("WebSocket server started")
+        print("Starting WebSocket server on ws://localhost:8765")
+        print("Server is now listening")
+        global wsLoop
+        wsLoop = asyncio.get_running_loop()
         await server.wait_closed()  # run forever or until closed
     return True
+
+def stopSocket():
+    if wsLoop and wsLoop.is_running(): #get the loop then end it gracefully on app close
+        print("closing")
+        wsLoop.call_soon_threadsafe(wsLoop.stop)
+
+def finishVerify():
+    if wsLoop and wsLoop.is_running() and isConnected:
+        verifyEvent.set()
+    if not isConnected:
+        print("Nothing connected")

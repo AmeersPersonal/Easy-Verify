@@ -65,7 +65,7 @@ export function useWebSocket(easyVerifyUrl, apiUrl) {
       } else {
         console.log("WebSocket closed normally.");
       }
-
+      setStartConnect(false);
       setSocketOpen(false);
     };
 
@@ -76,9 +76,7 @@ export function useWebSocket(easyVerifyUrl, apiUrl) {
           var encrypt = new JSEncrypt();
           var publicKey = JSON.parse(event.data);
           encrypt.setPublicKey(publicKey);
-
           var encryptedData = encrypt.encrypt("Encryption Test");
-
           sendMessage(encryptedData);
           verifyState.current = "Verifying";
           break;
@@ -92,9 +90,10 @@ export function useWebSocket(easyVerifyUrl, apiUrl) {
           }
           break;
         default:
-          console.log("Invalid State");
+          console.log("Invalid State, Closing socket");
           console.log(verifyState.current);
           console.log(event.data);
+          webSocket.current.close();
           break;
       }
     };

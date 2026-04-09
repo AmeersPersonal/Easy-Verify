@@ -1,35 +1,44 @@
 import time
 import tkinter
+import asyncio
 from tkinter import ttk
 import cv2
 from util.resources import resource_path
 from PIL import ImageTk, Image
 import tk_async_execute as tae
-from util.webSocketHandler import openSocket
+from util.webSocketHandler import openSocket, stopSocket, finishVerify
 
 import sv_ttk
 
-root = None
-currentConnection = None
+root = tkinter.Tk()
+camLabel = ttk.Label(root)
+labelText = ttk.Label(root)
+record = True
+
 
 def runWebsocket():
-    global currentConnection
-    currentConnection = tae.async_execute(openSocket(), visible=False,pop_up=False, master=root) 
+    tae.async_execute(openSocket(), visible=False,pop_up=False, master=root)
 
 def exitProgram():
-    
+    stopSocket()
     root.destroy()
-
 
 
 def cameraAction():
     vid = cv2.VideoCapture(0) # init camera
+
+    if not vid.isOpened():
+        print("Webcam error")
+        return
+
+
     camWidth, camHeight = 600, 400
     vid.set(cv2.CAP_PROP_FRAME_WIDTH, camWidth)
     vid.set(cv2.CAP_PROP_FRAME_HEIGHT, camHeight)
     #get camera input
-    camLabel = ttk.Label(root)
+    # camLabel = ttk.Label(root).pack()
     camLabel.pack()
+
     def cameraCapture():
         _, frame = vid.read()
 
@@ -39,31 +48,37 @@ def cameraAction():
         photo_image = ImageTk.PhotoImage(image=captured_image)
         camLabel.photo_image = photo_image
         camLabel.configure(image=photo_image)
-        camLabel.after(10, cameraCapture) #catch next frame after 10 ms
+        if record:
+            camLabel.after(1, cameraCapture)
+        else:
+           print("stopped camera") #catch next frame after 10 ms
 
     cameraCapture()
 
+
+def buttonAction():
+    #actionsLabel.config(text="Button Clicked!")
+    global record
+    record = False
+    finishVerify()
+
 def generateInterface():
-    global root
-    root = tkinter.Tk() #Tkinter Setup, this is the main window of the application 
     root.title("EasyVerify")
     root.geometry("1280x720")
     root.iconphoto(False, tkinter.PhotoImage(file=resource_path("assets\\icon.png")))
 
-    actionsLabel = ttk.Label(root, text="Welcome to EasyVerify").pack()
 
-    def buttonAction(): 
-        actionsLabel.config(text="Button Clicked!")
-
-    button = ttk.Button(root, text="Hello!", command=buttonAction)
+    labelText.config(text = "Welcome to EasyVerify")
+    labelText.pack()
+    button = ttk.Button(root, text="Verify Now", command=buttonAction)
     button.pack()
     sv_ttk.set_theme("dark")
-    
+
     tae.start()
+    cameraAction()
     root.after(0, runWebsocket) # start the websocket server in the background so we can receive messages from the browser and update the UI accordingly
     # root.after(10,cameraAction)
     root.protocol("WM_DELETE_WINDOW", exitProgram) #cleanup the websocket after closing the application
-    # cameraAction()
     root.mainloop()
     tae.stop()
 
