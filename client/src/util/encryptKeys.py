@@ -1,6 +1,5 @@
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.asymmetric import padding
-from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import serialization
 
 
@@ -11,7 +10,7 @@ class encryptor:
             key_size=4096,
         )
         self.publicKey = self.__privateKey.public_key()
-        
+
     def decrypt(self, data):
         print(len(data))
         print(self.__privateKey.key_size // 8)
@@ -20,13 +19,13 @@ class encryptor:
             padding.PKCS1v15()
         )
         return plaintext
-    
+
     def getPublicKeyPEM(self): #pem is the format that can be transfered to react so it can encrypt with
         return self.publicKey.public_bytes(
         encoding=serialization.Encoding.PEM,
         format=serialization.PublicFormat.SubjectPublicKeyInfo
     )
-    
+
     @property
     def getPublicKey(self):
         return self.publicKey
