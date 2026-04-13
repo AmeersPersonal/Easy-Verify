@@ -68,7 +68,7 @@ else {
 
 # Upgrade pip (optional but recommended)
 
-if (-not( $args[0] -eq "skipUpdate")) {
+if (-not( $args -eq "skipUpdate")) {
     Write-Host "Upgrading pip..." -ForegroundColor Blue
     python -m pip install --upgrade pip
 }
@@ -91,7 +91,7 @@ if (-Not (Test-Path $requirementsFile)) {
     exit 1
 }
 
-if(-Not($args[0] -eq "skipUpdate")) {
+if (-Not($args -eq "skipUpdate")) {
     Write-Host "Installing dependencies..." -ForegroundColor Blue
     pip install -r $requirementsFile
     # Ensure PyInstaller is installed 
@@ -123,7 +123,10 @@ Write-Host "Building executable..." -ForegroundColor Blue
 
 $error.clear()
 
+
 pyinstaller "src/main.spec" --distpath $buildDir --workpath "$buildDir\build" --noconfirm 
+
+
 
 if ($error) {
     Write-Error "PyInstaller build failed."

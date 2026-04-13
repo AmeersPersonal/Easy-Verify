@@ -8,6 +8,7 @@ import os
 # we should use this for when to store the photo of the person and when to delete it, we can also use it to store the photos of the ID for a short period of time
 PHOTO_DIR= os.path.dirname(os.path.realpath(__file__)) + "/temp_photos"
 ID_DIR = os.path.dirname(os.path.realpath(__file__)) + "/temp_ids"
+
 """
 I've decied this doesn't need OOP
 instead we will just utlize the methods in the client class
@@ -21,6 +22,8 @@ def estimate_age(img1, img2, img3)-> int:
     img paramters are img paths
     The AI will exmaine 3 images and will give an estimate age of the user
     """
+
+
 
     img_list = [img1, img2, img3]
     estimated_age = []
@@ -42,7 +45,7 @@ def estimate_age(img1, img2, img3)-> int:
 
     if not estimated_age or len(estimated_age) != len(img_list):
         return FAILED_STATUS_CODE
-    
+
     #averaged out age, should we automatically choose to lowest one?
 
     final_guess = round(sum(estimated_age) / len(estimated_age))
@@ -57,10 +60,10 @@ def verify_user_id(img1, img2)->bool:
     try:
         """
         TODO:
-        Test differnt verfication models 
+        Test differnt verfication models
         """
         analysis =  DeepFace.verify(img1_path=img1, img2_path=img2, model_name="VGG-face", detector_backend="retinaface", enforce_detection=True)
-        
+
         return analysis["verified"]
 
     except ValueError:
@@ -94,7 +97,7 @@ def cleanup_temp_files():
     This will clean up the temp photos and ids after we are done with them
     should we implement this after running the functions or after we get the results back to the user?
     """
-    
+
     for folder in [PHOTO_DIR, ID_DIR]:
         for filename in os.listdir(folder):
             file_path = os.path.join(folder, filename)

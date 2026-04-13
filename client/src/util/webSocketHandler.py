@@ -1,37 +1,62 @@
 import asyncio
-import time
 import websockets
+import json
+import base64
+import traceback
+import threading
+from util.encryptKeys import encryptor
 
-connectionStatus = True
-
-def setConnectionStatus(status):
-    global connectionStatus
-    connectionStatus = status
-async def endWebsocket(server):
-
-    setConnectionStatus(False)
+wsLoop = None
+verifyEvent = threading.Event()
+isConnected = False
 
 async def handler(websocket):
-    #TODO: Find way to elegantly close websocket, without giving an exception in the console, when the application is closed. Currently it just prints "Connection closed" in the console which is not ideal but it works for now.
-
-    print("Client connected")
     try:
-        message = await websocket.recv()
-        print(f"Received message: {message}")
-        
-        await websocket.send(f"Message received: {message}")
-        await websocket.send("Verification complete")
+        global isConnected
+        isConnected = True
 
-    except websockets.exceptions.ConnectionClosed:
-        print("Client disconnected")
+        print("Client connected")
+        print("Sending Key")
+        e = encryptor()
+        await websocket.send(json.dumps(e.getPublicKeyPEM().decode('utf-8')))
+        encryptedB64 = await websocket.recv()
+        encrypted = base64.b64decode(encryptedB64.strip())
+        apiAndAuth = e.decrypt(encrypted).decode()
+        print("got cyphertext")
+        print(apiAndAuth)
+
+        verifyEvent.wait()
+
+        await websocket.send("Verification complete")
+        print("Transaction complete")
+    except ValueError:
+        print("Key Error")
+    except Exception as err:
+        print("Unexpected error")
+        print(err)
     finally:
-        print("Connection closed")
+        print("closing socket")
+        await websocket.close()
+        stopSocket()
+
+
 
 async def openSocket():
-    print("Starting WebSocket server on ws://localhost:8765")
     async with websockets.serve(handler, "localhost", 8765) as server:
-        print("WebSocket server started")
-        if (not connectionStatus):
-            print("Connection status is False, closing server")
-            await server.close()
+        print("Starting WebSocket server on ws://localhost:8765")
+        print("Server is now listening")
+        global wsLoop
+        wsLoop = asyncio.get_running_loop()
         await server.wait_closed()  # run forever or until closed
+    return True
+
+def stopSocket():
+    if wsLoop and wsLoop.is_running(): #get the loop then end it gracefully on app close
+        print("closing")
+        wsLoop.call_soon_threadsafe(wsLoop.stop)
+
+def finishVerify():
+    if wsLoop and wsLoop.is_running() and isConnected:
+        verifyEvent.set()
+    if not isConnected:
+        print("Nothing connected")
