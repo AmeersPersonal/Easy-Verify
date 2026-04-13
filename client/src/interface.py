@@ -61,10 +61,35 @@ def generateInterface():
     tae.start()
     root.after(0, runWebsocket) # start the websocket server in the background so we can receive messages from the browser and update the UI accordingly
     root.protocol("WM_DELETE_WINDOW", exitProgram) #cleanup the websocket after closing the application
-    cameraAction()
+    #cameraAction()
+    settings()
+    root.mainloop()
+    tae.stop()
+    
+def generateInterfaceV2():
+    global root, main_frame, settings_frame
+    root = tkinter.Tk() #Tkinter Setup, this is the main window of the application 
+    root.title("EasyVerify")
+    root.geometry("1280x720")
+    root.iconphoto(False, tkinter.PhotoImage(file=resource_path("assets/icon.png")))
+    main_frame = ttk.Frame(root)
+    actionsLabel = ttk.Label(main_frame, text="Welcome to EasyVerify").pack()
+
+    def buttonAction(): 
+        actionsLabel.config(text="Button Clicked!")
+
+    button = ttk.Button(main_frame, text="Hello!", command=buttonAction)
+    button.pack()
+    sv_ttk.set_theme("dark")
+    
+    tae.start()
+    root.after(0, runWebsocket) # start the websocket server in the background so we can receive messages from the browser and update the UI accordingly
+    root.protocol("WM_DELETE_WINDOW", exitProgram) #cleanup the websocket after closing the application
+    #cameraAction()
+    settings()
     root.mainloop()
     tae.stop()
 
 def settings():
-    settings_button = ttk.Button(root)
-    settings_button.pack()
+    settings_button = ttk.Button(root, text="Settings", padding = (20, 10))
+    settings_button.pack(side = "bottom", anchor = "nw")
