@@ -17,6 +17,10 @@ class verifyUI:
         self.camLabel = ttk.Label(self.uiFrame)
         self.labelText = ttk.Label(self.uiFrame)
         self.record = True
+        self.verificationState = 0 # 1 = first image taken 2: second 3: third
+      #  self.img1, img2, img3 = #numpy array for image
+       # self.currentImage = #same thing as 
+        
 
         self.labelText.config(text = "Welcome to EasyVerify")
         self.labelText.pack()
@@ -66,7 +70,9 @@ class verifyUI:
     def verifyAction(self):
         #actionsLabel.config(text="Button Clicked!")
         self.record = False
-        finishVerify()
+        if (self.verificationState > 3):
+            #verificatio nhandler
+            print("test")
 
         # settings_button = ttk.Button(self.verifyFrame)
         # settings_button.pack()
@@ -96,16 +102,19 @@ class mainUI:
         self.root.title("EasyVerify")
         self.root.geometry("1280x720")
         self.root.iconphoto(False, tkinter.PhotoImage(file=resource_path("assets\\icon.png")))
+        self.root.config(bg ="skyblue")
         sv_ttk.set_theme("dark")
 
         self.verifyInterface = verifyUI(self) # generate the verification UI
         self.settingsInterface = settingsUI(self)
+        self.welcomeInterface = welcome_page(self)
+      #  self.signInInterface = sign_in(self)
 
         #make 3 objects for each ui, then switch between them all
         # start with the verifyui
     def runUI(self):
-        self.switchVerify() # we start with the verification ui,
-
+        #self.switchVerify() # we start with the verification ui,
+        self.switchToWelcomePage()
         tae.start()
         self.root.protocol("WM_DELETE_WINDOW", self.exitProgram) #cleanup the websocket after closing the application
         self.root.mainloop()
@@ -125,10 +134,75 @@ class mainUI:
         else:
             print("to frame already visible")
 
-    def switchVerify(self):
+    def switchVerify(self, ):
         self.switchUI(self.settingsInterface.uiFrame, self.verifyInterface.uiFrame)
         print("switching to verification UI")
 
     def switchSettings(self):
         self.switchUI(self.verifyInterface.uiFrame, self.settingsInterface.uiFrame)
         print("switching to settings UI")
+        
+    def switchToWelcomePage(self):
+        self.switchUI(self.verifyInterface.uiFrame, self.welcomeInterface.uiFrame) 
+        print("switching to welcome UI")
+        
+    def switchFromWelcomePage(self):
+        self.switchUI(self.welcomeInterface.uiFrame, self.verifyInterface.uiFrame)
+        print("switching from welcome page")
+    
+    # def switchFromWelcomeToSignIn(self):
+    #     self.switchUI(self.welcomeInterface.uiFrame, self.signInInterface.uiFrame)
+    #     print("Switching to sign in page")
+    
+
+class welcome_page:
+     def __init__(self, mainUI):
+        self.uiFrame = tkinter.Frame(mainUI.root)
+        # self.uiFrame.pack(fill='both', expand=True)
+        self.mainUI = mainUI
+        labelText = "Welcome to Easy Verify! \n\n Would you like to opt into the database?"
+        label = ttk.Label(self.uiFrame, text =labelText, font = ("Helvetica", 24, "bold")) 
+        label.pack(pady = 30)
+        self.var = tkinter.IntVar(value = 1)
+        yes_button = tkinter.Radiobutton(self.uiFrame, text="Yes", variable=self.var, value=1)
+        yes_button.pack()
+        no_button = tkinter.Radiobutton(self.uiFrame, text="No", variable=self.var, value=2) 
+        no_button.pack()
+        
+        
+        # no_button = tkinter.Button(self.uiFrame,text="No", command = self.mainUI.switchFromWelcomePage)
+        # #let me do my part bro dont do everythign
+        # no_button.pack()
+        continue_button = tkinter.Button(self.uiFrame,text="Continue", command = self.mainUI.switchFromWelcomePage)
+        continue_button.pack()
+        
+# class sign_in:
+#     def __init__(self, mainUI):
+#         self.uiFrame = tkinter.Frame(mainUI.root)
+#         self.mainUI = mainUI
+#         label = ttk.Label(self.uiFrame, text ="Email", font = ("Georgia", 16, "bold"))
+#         label.pack(pady = 10)
+        
+       
+#         self.name_var=tkinter.StringVar()
+#         self.passw_var=tkinter .StringVar()
+#         email_entry = tkinter.Entry(self.uiFrame, textvariable = self.name_var, font=('calibre',10,'normal'))
+#         email_entry.pack(pady=10)
+#         passLabel = ttk.Label(self.uiFrame, text ="Password", font = ("Georgia", 16, "bold"))
+#         passLabel.pack(pady = 10)
+#         pass_entry = tkinter.Entry(self.uiFrame, textvariable = self.passw_var, font=('calibre',10,'normal'), show = "*")
+#         pass_entry.pack(pady=10)
+#         submit_button = tkinter.Button(self.uiFrame, text = "submit", command = self.submit)
+#         submit_button.pack()
+#     def submit(self):
+       
+#         self.name = self.name_var.get()
+#         self.password=self.passw_var.get()
+        
+#         print("The name is : " + self.name)
+#         print("The password is : " + self.password)
+        
+#         self.name_var.set("")
+#         self.passw_var.set("")
+
+       

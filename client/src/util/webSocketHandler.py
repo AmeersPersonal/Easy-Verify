@@ -4,6 +4,7 @@ import json
 import base64
 import traceback
 import threading
+from util.client import Client
 from util.encryptKeys import encryptor
 
 wsLoop = None
@@ -25,7 +26,9 @@ async def handler(websocket):
         apiAndAuth = e.decrypt(encrypted).decode()
         print("got cyphertext and decrypted it")
         print(apiAndAuth)
-        print(json.loads(apiAndAuth))
+        
+        userClient = Client(json.loads(apiAndAuth))
+        userClient.printAttrib() #temporary        
 
         verifyEvent.wait()
 

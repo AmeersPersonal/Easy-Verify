@@ -39,8 +39,11 @@ def estimate_age(img1, img2, img3)-> int:
                 estimated_age.append(age)
 
     except ValueError:
+        print("VALUE ERROR")
         pass
-    except Exception:
+    except Exception as e:
+        print("UNKNOWN ERROR")
+        print(e)
         pass
 
     if not estimated_age or len(estimated_age) != len(img_list):
