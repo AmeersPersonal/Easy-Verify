@@ -76,7 +76,19 @@ export function useWebSocket(easyVerifyUrl, apiUrl) {
           var encrypt = new JSEncrypt();
           var publicKey = JSON.parse(event.data);
           encrypt.setPublicKey(publicKey);
-          var encryptedData = encrypt.encrypt("Encryption Test");
+
+          var userTest = {
+            firstName: "John",
+            lastName: "Doe",
+            email: "example@example.com",
+            callBackURL: "https://postman-echo.com/get", //TODO: replace this with actual callback request
+            oAuthToken: "TEST TEST",
+            clientID: "TEST TEST"
+          }
+
+
+
+          var encryptedData = encrypt.encrypt(JSON.stringify(userTest));
           sendMessage(encryptedData);
           verifyState.current = "Verifying";
           break;

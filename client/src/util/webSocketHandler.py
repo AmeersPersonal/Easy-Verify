@@ -10,6 +10,7 @@ wsLoop = None
 verifyEvent = threading.Event()
 isConnected = False
 
+
 async def handler(websocket):
     try:
         global isConnected
@@ -22,8 +23,9 @@ async def handler(websocket):
         encryptedB64 = await websocket.recv()
         encrypted = base64.b64decode(encryptedB64.strip())
         apiAndAuth = e.decrypt(encrypted).decode()
-        print("got cyphertext")
+        print("got cyphertext and decrypted it")
         print(apiAndAuth)
+        print(json.loads(apiAndAuth))
 
         verifyEvent.wait()
 

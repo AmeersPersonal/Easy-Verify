@@ -1,6 +1,5 @@
 import sys, traceback
-
-from interface import generateInterface
+from interface import mainUI
 
 
 def main():
@@ -9,7 +8,8 @@ def main():
     print("URL:", sys.argv[1:])
 
     try:
-        generateInterface()
+        mUI = mainUI()
+        mUI.runUI()
     except KeyboardInterrupt as err:
         traceback.print_exc()
         print(err)
