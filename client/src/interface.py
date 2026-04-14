@@ -76,6 +76,7 @@ def generateInterface():
 
     tae.start()
     cameraAction()
+    settings()
     root.after(0, runWebsocket) # start the websocket server in the background so we can receive messages from the browser and update the UI accordingly
     # root.after(10,cameraAction)
     root.protocol("WM_DELETE_WINDOW", exitProgram) #cleanup the websocket after closing the application
@@ -85,5 +86,4 @@ def generateInterface():
 def settings():
     settings_button = ttk.Button(root, text="Settings", padding = (20, 10))
     settings_button.pack(side = "bottom", anchor = "nw")
-    settings_button = ttk.Button(root)
     settings_button.pack()
