@@ -1,15 +1,23 @@
-import time
 import tkinter
-import asyncio
 from tkinter import ttk
+
 import cv2
-from util.resources import resource_path
-from PIL import ImageTk, Image
-import tk_async_execute as tae
-from util.webSocketHandler import openSocket, stopSocket, finishVerify
-
+import numpy as np
 import sv_ttk
+import tk_async_execute as tae
+from PIL import Image, ImageTk
 
+from util.resources import resource_path
+from util.webSocketHandler import openSocket, stopSocket
+from util.verificationHandler import startVerification
+
+
+"""
+The verification process has 3 states:
+    1: Take a picture of the front
+    2: Take a picture from the left
+    3: Take a picture from the right
+"""
 class verifyUI:
     def __init__(self, mainUI):
         self.uiFrame = tkinter.Frame(mainUI.root)
@@ -17,65 +25,152 @@ class verifyUI:
         self.camLabel = ttk.Label(self.uiFrame)
         self.labelText = ttk.Label(self.uiFrame)
         self.record = True
-        self.verificationState = 0 # 1 = first image taken 2: second 3: third
-      #  self.img1, img2, img3 = #numpy array for image
-       # self.currentImage = #same thing as 
-        
 
-        self.labelText.config(text = "Welcome to EasyVerify")
+        self.verificationState = 0  # 1 = first image taken 2: second 3: third
+        self.img1, self.img2, self.img3 = (
+            np.array([]),
+            np.array([]),
+            np.array([]),
+        )  # numpy array for images
+        self.currentImage = np.array([])  # same thing as ^
+
+        self.labelText.config(text="Take a picture looking forward")
         self.labelText.pack()
-        verifyButton = ttk.Button(self.uiFrame, text="Verify Now", command=self.verifyAction)
+
+        verifyButton = ttk.Button(
+            self.uiFrame, text="Verify Now", command=self.verifyAction
+        )
         verifyButton.pack()
 
-        settingsButton = ttk.Button(self.uiFrame, text="Settings", padding = (20, 10), command=self.mainUI.switchSettings)
-        settingsButton.pack(side = "bottom", anchor = "nw")
+        settingsButton = ttk.Button(
+            self.uiFrame,
+            text="Settings",
+            padding=(20, 10),
+            command=self.mainUI.switchSettings,
+        )
+        settingsButton.pack(side="bottom", anchor="nw")
 
-        self.cameraAction()
-        self.uiFrame.after(0, self.runWebsocket) # start the websocket server in the background so we can receive messages from the browser and update the UI accordingly
+        self.vid = cv2.VideoCapture(0)  # init camera
+
+        if not self.vid.isOpened():
+            print("Webcam error")
+            return
+
+        self.cameraInit()
+        self.uiFrame.after(
+            0, self.runWebsocket
+        )  # start the websocket server in the background so we can receive messages from the browser and update the UI accordingly
         # self.verifyFrame.after(10,self.cameraAction)
         #
 
     def runWebsocket(self):
-        tae.async_execute(openSocket(), visible=False,pop_up=False, master=self.uiFrame)
+        tae.async_execute(
+            openSocket(), visible=False, pop_up=False, master=self.uiFrame
+        )
 
-    def cameraAction(self):
-        vid = cv2.VideoCapture(0) # init camera
+    def cameraCapture(self):
+        _, frame = self.vid.read()
 
-        if not vid.isOpened():
-            print("Webcam error")
-            return
+        self.currentImage = frame
+        imageDisplay = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+        captured_image = Image.fromarray(imageDisplay)
 
+        photo_image = ImageTk.PhotoImage(image=captured_image)
+        self.camLabel.photo_image = photo_image
+        self.camLabel.configure(image=photo_image)
+        if self.record:
+            self.camLabel.after(1, self.cameraCapture)
+        else:
+            print("stopped camera")
+
+    def cameraInit(self):
         camWidth, camHeight = 600, 400
-        vid.set(cv2.CAP_PROP_FRAME_WIDTH, camWidth)
-        vid.set(cv2.CAP_PROP_FRAME_HEIGHT, camHeight)
-        #get camera input
-        # camLabel = ttk.Label(root).pack()
+        self.vid.set(cv2.CAP_PROP_FRAME_WIDTH, camWidth)
+        self.vid.set(cv2.CAP_PROP_FRAME_HEIGHT, camHeight)
+        # get camera input
         self.camLabel.pack()
-
-        def cameraCapture():
-            _, frame = vid.read()
-
-            opencv_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
-            captured_image = Image.fromarray(opencv_image)
-
-            photo_image = ImageTk.PhotoImage(image=captured_image)
-            self.camLabel.photo_image = photo_image
-            self.camLabel.configure(image=photo_image)
-            if self.record:
-                self.camLabel.after(1, cameraCapture)
-            else:
-                print("stopped camera") #catch next frame after 10 ms
-        cameraCapture()
+        # catch next frame after 10 ms
+        self.cameraCapture()
 
     def verifyAction(self):
-        #actionsLabel.config(text="Button Clicked!")
         self.record = False
-        if (self.verificationState > 3):
-            #verificatio nhandler
-            print("test")
+        if self.verificationState >= 3:
+            print("error state")
+            print(f"test + {self.verificationState}")
 
+        else:
+            self.mainUI.confirmInterface.updateImage(self.currentImage)
+            self.mainUI.switchVerifyToConfirm()
+
+    def confirmImage(self):
+        # confirm image, but don't pass to next screen
+        match (self.verificationState):
+            case 0:
+                self.img1 = self.currentImage.copy()
+                print("img1")
+                self.labelText.config(text="Take a picture looking slightly to the Right")
+            case 1:
+                self.img2 = self.currentImage.copy()
+                print("img2")
+                self.labelText.config(text="Take a picture looking slightly to the Left")
+            case 2:
+                self.img3 = self.currentImage.copy()
+                print("img3")
+                startVerification(self.img1, self.img2, self.img3, self)
+                # TODO: do the verification here
+            case _:
+                print("Invalid State")
+                exit(1)
+
+        self.verificationState = self.verificationState + 1
+        self.record = True
+        self.cameraCapture()
+
+    def failedVerify(self):
+        self.verificationState = 0
+        self.labelText.config(text="Verification failed, Try again")
+        self.record = True
+        self.cameraCapture()
         # settings_button = ttk.Button(self.verifyFrame)
         # settings_button.pack()
+
+class confirmScreen:
+    def __init__(self, mainUI):
+        self.verifyUI = mainUI.verifyInterface
+        self.uiFrame = tkinter.Frame(mainUI.root)
+        self.mainUI = mainUI
+
+        self.camLabel = ttk.Label(self.uiFrame)
+
+        self.camLabel.pack()
+        self.labelText = ttk.Label(self.uiFrame, text="Does this image look correct?")
+        self.labelText.pack()
+        self.confirmButton = ttk.Button(
+            self.uiFrame, text="Confirm", command=self.confirm
+        )
+        self.confirmButton.pack()
+        self.backButton = ttk.Button(self.uiFrame, text="Back", command=self.back)
+        self.backButton.pack()
+
+    def updateImage(self, image):
+        imageDisplay = cv2.cvtColor(image, cv2.COLOR_BGR2RGBA)
+        captured_image = Image.fromarray(imageDisplay)
+
+        photo_image = ImageTk.PhotoImage(image=captured_image)
+        self.camLabel.photo_image = photo_image  # updates the visual image display
+        self.camLabel.configure(image=photo_image)
+
+    def confirm(self):
+        self.mainUI.verifyInterface.confirmImage()
+        print("wow")
+        self.mainUI.switchUI(self.uiFrame, self.mainUI.verifyInterface.uiFrame)
+
+    def back(self):
+        self.mainUI.verifyInterface.record = True
+        self.mainUI.verifyInterface.cameraCapture()
+        print("notWow")
+        self.mainUI.switchUI(self.uiFrame, self.mainUI.verifyInterface.uiFrame)
+
 
 class settingsUI:
     def __init__(self, mainUI):
@@ -83,8 +178,11 @@ class settingsUI:
         # self.uiFrame.pack(fill='both', expand=True)
         self.mainUI = mainUI
 
-        settingsButton = tkinter.Button(self.uiFrame ,text="Go back to Main", command=self.mainUI.switchVerify)
+        settingsButton = tkinter.Button(
+            self.uiFrame, text="Go back to Main", command=self.mainUI.switchVerify
+        )
         settingsButton.pack()
+
 
 class mainUI:
 
@@ -101,22 +199,28 @@ class mainUI:
         # set up interface and icon
         self.root.title("EasyVerify")
         self.root.geometry("1280x720")
-        self.root.iconphoto(False, tkinter.PhotoImage(file=resource_path("assets\\icon.png")))
-        self.root.config(bg ="skyblue")
+        self.root.iconphoto(
+            False, tkinter.PhotoImage(file=resource_path("assets\\icon.png"))
+        )
+        self.root.config(bg="skyblue")
         sv_ttk.set_theme("dark")
 
-        self.verifyInterface = verifyUI(self) # generate the verification UI
+        self.verifyInterface = verifyUI(self)  # generate the verification UI
         self.settingsInterface = settingsUI(self)
         self.welcomeInterface = welcome_page(self)
-      #  self.signInInterface = sign_in(self)
+        self.confirmInterface = confirmScreen(self)
 
-        #make 3 objects for each ui, then switch between them all
-        # start with the verifyui
+    #  self.signInInterface = sign_in(self)
+
+    # make 3 objects for each ui, then switch between them all
+    # start with the verifyui
     def runUI(self):
-        #self.switchVerify() # we start with the verification ui,
+        # self.switchVerify() # we start with the verification ui,
         self.switchToWelcomePage()
         tae.start()
-        self.root.protocol("WM_DELETE_WINDOW", self.exitProgram) #cleanup the websocket after closing the application
+        self.root.protocol(
+            "WM_DELETE_WINDOW", self.exitProgram
+        )  # cleanup the websocket after closing the application
         self.root.mainloop()
         tae.stop()
 
@@ -129,61 +233,73 @@ class mainUI:
 
         # if the new frame is not visible, we switch to the new one
         if not toFrame.winfo_viewable():
-            toFrame.pack(fill='both', expand=True)
+            toFrame.pack(fill="both", expand=True)
             toFrame.tkraise()
         else:
             print("to frame already visible")
 
-    def switchVerify(self, ):
+    def switchVerify(self):
         self.switchUI(self.settingsInterface.uiFrame, self.verifyInterface.uiFrame)
         print("switching to verification UI")
 
     def switchSettings(self):
         self.switchUI(self.verifyInterface.uiFrame, self.settingsInterface.uiFrame)
         print("switching to settings UI")
-        
+
     def switchToWelcomePage(self):
-        self.switchUI(self.verifyInterface.uiFrame, self.welcomeInterface.uiFrame) 
+        self.switchUI(self.verifyInterface.uiFrame, self.welcomeInterface.uiFrame)
         print("switching to welcome UI")
-        
+
     def switchFromWelcomePage(self):
         self.switchUI(self.welcomeInterface.uiFrame, self.verifyInterface.uiFrame)
         print("switching from welcome page")
-    
+
+    def switchVerifyToConfirm(self):
+        self.switchUI(self.verifyInterface.uiFrame, self.confirmInterface.uiFrame)
+        print("switching from welcome page")
+
     # def switchFromWelcomeToSignIn(self):
     #     self.switchUI(self.welcomeInterface.uiFrame, self.signInInterface.uiFrame)
     #     print("Switching to sign in page")
-    
+
 
 class welcome_page:
-     def __init__(self, mainUI):
+    def __init__(self, mainUI):
         self.uiFrame = tkinter.Frame(mainUI.root)
         # self.uiFrame.pack(fill='both', expand=True)
         self.mainUI = mainUI
-        labelText = "Welcome to Easy Verify! \n\n Would you like to opt into the database?"
-        label = ttk.Label(self.uiFrame, text =labelText, font = ("Helvetica", 24, "bold")) 
-        label.pack(pady = 30)
-        self.var = tkinter.IntVar(value = 1)
-        yes_button = tkinter.Radiobutton(self.uiFrame, text="Yes", variable=self.var, value=1)
+        labelText = (
+            "Welcome to Easy Verify! \n\n Would you like to opt into the database?"
+        )
+        label = ttk.Label(self.uiFrame, text=labelText, font=("Helvetica", 24, "bold"))
+        label.pack(pady=30)
+        self.var = tkinter.IntVar(value=1)
+        yes_button = tkinter.Radiobutton(
+            self.uiFrame, text="Yes", variable=self.var, value=1
+        )
         yes_button.pack()
-        no_button = tkinter.Radiobutton(self.uiFrame, text="No", variable=self.var, value=2) 
+        no_button = tkinter.Radiobutton(
+            self.uiFrame, text="No", variable=self.var, value=2
+        )
         no_button.pack()
-        
-        
+
         # no_button = tkinter.Button(self.uiFrame,text="No", command = self.mainUI.switchFromWelcomePage)
         # #let me do my part bro dont do everythign
         # no_button.pack()
-        continue_button = tkinter.Button(self.uiFrame,text="Continue", command = self.mainUI.switchFromWelcomePage)
+        continue_button = tkinter.Button(
+            self.uiFrame, text="Continue", command=self.mainUI.switchFromWelcomePage
+        )
         continue_button.pack()
-        
+
+
 # class sign_in:
 #     def __init__(self, mainUI):
 #         self.uiFrame = tkinter.Frame(mainUI.root)
 #         self.mainUI = mainUI
 #         label = ttk.Label(self.uiFrame, text ="Email", font = ("Georgia", 16, "bold"))
 #         label.pack(pady = 10)
-        
-       
+
+
 #         self.name_var=tkinter.StringVar()
 #         self.passw_var=tkinter .StringVar()
 #         email_entry = tkinter.Entry(self.uiFrame, textvariable = self.name_var, font=('calibre',10,'normal'))
@@ -195,14 +311,12 @@ class welcome_page:
 #         submit_button = tkinter.Button(self.uiFrame, text = "submit", command = self.submit)
 #         submit_button.pack()
 #     def submit(self):
-       
+
 #         self.name = self.name_var.get()
 #         self.password=self.passw_var.get()
-        
+
 #         print("The name is : " + self.name)
 #         print("The password is : " + self.password)
-        
+
 #         self.name_var.set("")
 #         self.passw_var.set("")
-
-       
