@@ -163,10 +163,10 @@ class welcome_page:
         labelText = "Welcome to Easy Verify! \n\n Would you like to opt into the database?"
         label = ttk.Label(self.uiFrame, text =labelText, font = ("Helvetica", 24, "bold")) 
         label.pack(pady = 30)
-        self.var = tkinter.IntVar(value = 1)
-        yes_button = tkinter.Radiobutton(self.uiFrame, text="Yes", variable=self.var, value=1)
+        var = tkinter.IntVar(self.uiFrame, value = 1)
+        yes_button = tkinter.Radiobutton(self.uiFrame, text="Yes", variable=var, value="1")
         yes_button.pack()
-        no_button = tkinter.Radiobutton(self.uiFrame, text="No", variable=self.var, value=2) 
+        no_button = tkinter.Radiobutton(self.uiFrame, text="No", variable=var, value="2") 
         no_button.pack()
         
         
