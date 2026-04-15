@@ -1,6 +1,7 @@
 import tkinter
 from tkinter import ttk
 
+import darkdetect
 import cv2
 import numpy as np
 import sv_ttk
@@ -18,6 +19,8 @@ The verification process has 3 states:
     2: Take a picture from the left
     3: Take a picture from the right
 """
+
+
 class verifyUI:
     def __init__(self, mainUI):
         self.uiFrame = tkinter.Frame(mainUI.root)
@@ -56,13 +59,20 @@ class verifyUI:
             print("Webcam error")
             return
 
-        self.cameraInit()
+       # self.cameraInit()
         self.uiFrame.after(
             0, self.runWebsocket
         )  # start the websocket server in the background so we can receive messages from the browser and update the UI accordingly
         # self.verifyFrame.after(10,self.cameraAction)
         #
-
+        self.go_back_to_welcome()
+    
+    
+    def go_back_to_welcome(self):
+        print("GO back on")
+      
+        goBack = tkinter.Button(self.uiFrame, text= "Back", font=("Helvetica", 16, "bold"), foreground="dark blue", background="light blue", command = self.mainUI.switchToWelcomePage)
+        goBack.pack(side="top", anchor="nw")
     def runWebsocket(self):
         tae.async_execute(
             openSocket(), visible=False, pop_up=False, master=self.uiFrame
@@ -90,7 +100,7 @@ class verifyUI:
         # get camera input
         self.camLabel.pack()
         # catch next frame after 10 ms
-        self.cameraCapture()
+        #self.cameraCapture()
 
     def verifyAction(self):
         self.record = False
@@ -108,11 +118,15 @@ class verifyUI:
             case 0:
                 self.img1 = self.currentImage.copy()
                 print("img1")
-                self.labelText.config(text="Take a picture looking slightly to the Right")
+                self.labelText.config(
+                    text="Take a picture looking slightly to the Right"
+                )
             case 1:
                 self.img2 = self.currentImage.copy()
                 print("img2")
-                self.labelText.config(text="Take a picture looking slightly to the Left")
+                self.labelText.config(
+                    text="Take a picture looking slightly to the Left"
+                )
             case 2:
                 self.img3 = self.currentImage.copy()
                 print("img3")
@@ -133,6 +147,7 @@ class verifyUI:
         self.cameraCapture()
         # settings_button = ttk.Button(self.verifyFrame)
         # settings_button.pack()
+
 
 class confirmScreen:
     def __init__(self, mainUI):
@@ -178,11 +193,20 @@ class settingsUI:
         # self.uiFrame.pack(fill='both', expand=True)
         self.mainUI = mainUI
 
-        settingsButton = tkinter.Button(
+        settingsButton = ttk.Button(
             self.uiFrame, text="Go back to Main", command=self.mainUI.switchVerify
         )
         settingsButton.pack()
+        self.change_theme()
+    
 
+    def change_theme(self):
+        frame = self.uiFrame
+        
+        toggle_theme = ttk.Button(frame, text = "Toggle theme", command = sv_ttk.toggle_theme)
+        toggle_theme.pack()
+        
+    
 
 class mainUI:
 
@@ -203,13 +227,13 @@ class mainUI:
             False, tkinter.PhotoImage(file=resource_path("assets\\icon.png"))
         )
         self.root.config(bg="skyblue")
-        sv_ttk.set_theme("dark")
+        sv_ttk.set_theme(darkdetect.theme())
 
         self.verifyInterface = verifyUI(self)  # generate the verification UI
         self.settingsInterface = settingsUI(self)
         self.welcomeInterface = welcome_page(self)
         self.confirmInterface = confirmScreen(self)
-
+   
     #  self.signInInterface = sign_in(self)
 
     # make 3 objects for each ui, then switch between them all
@@ -224,6 +248,8 @@ class mainUI:
         self.root.mainloop()
         tae.stop()
 
+    
+  
     def switchUI(self, fromFrame, toFrame):
         # if the old frame is visible, we hide it
         if fromFrame.winfo_viewable():
@@ -237,6 +263,8 @@ class mainUI:
             toFrame.tkraise()
         else:
             print("to frame already visible")
+    
+
 
     def switchVerify(self):
         self.switchUI(self.settingsInterface.uiFrame, self.verifyInterface.uiFrame)
@@ -274,23 +302,41 @@ class welcome_page:
         label = ttk.Label(self.uiFrame, text=labelText, font=("Helvetica", 24, "bold"))
         label.pack(pady=30)
         self.var = tkinter.IntVar(value=1)
-        yes_button = tkinter.Radiobutton(
-            self.uiFrame, text="Yes", variable=self.var, value=1
+    
+        self.Welcome_Buttons()
+        my_style = ttk.Style()
+        my_style.configure('continue.TButton', font = ("Helvetica", 18, "bold"))
+        continue_button = ttk.Button(
+            self.uiFrame, text="Continue", style = 'continue.TButton', command= lambda x= self.selected_choice.get(): self.user_choice(x)
         )
-        yes_button.pack()
-        no_button = tkinter.Radiobutton(
-            self.uiFrame, text="No", variable=self.var, value=2
-        )
-        no_button.pack()
+        continue_button.pack(fill = tkinter.X, ipady = 3)
 
-        # no_button = tkinter.Button(self.uiFrame,text="No", command = self.mainUI.switchFromWelcomePage)
-        # #let me do my part bro dont do everythign
-        # no_button.pack()
-        continue_button = tkinter.Button(
-            self.uiFrame, text="Continue", command=self.mainUI.switchFromWelcomePage
-        )
-        continue_button.pack()
+    def Welcome_Buttons(self):
 
+        self.selected_choice = tkinter.StringVar(self.uiFrame, "1")
+
+        values = {
+        "Yes": "1",
+        "No": "2",
+        }
+
+        for text, value in values.items():
+            tkinter.Radiobutton(
+                self.uiFrame, text=text,font=("Helvetica", 24, "bold"), variable=self.selected_choice, value=value, indicator=0, foreground="dark blue", background="light blue"
+            ).pack(fill= tkinter.X, ipady=5)
+
+      
+        
+    def user_choice(self, choice):
+        if choice == "1":
+            print("User chose Yes")
+        elif choice == "2":
+            print("User chose No")
+        
+        self.mainUI.switchFromWelcomePage()
+
+        
+    
 
 # class sign_in:
 #     def __init__(self, mainUI):

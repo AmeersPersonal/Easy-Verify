@@ -1,30 +1,53 @@
-# Importing Tkinter module
-from tkinter import *
-# from tkinter.ttk import *
 
-# Creating master Tkinter window
-master = Tk()
-master.geometry("175x175")
+# import tkinter
+# from tkinter import ttk
 
-# Tkinter string variable
-# able to store any string value
-v = StringVar(master, "1")
+# root = tkinter.Tk()
 
-# Dictionary to create multiple buttons
-values = {"RadioButton 1" : "1",
-          "RadioButton 2" : "2",
-          "RadioButton 3" : "3",
-          "RadioButton 4" : "4",
-          "RadioButton 5" : "5"}
+# style = ttk.Style()
+# style.map("C.TButton",
+#     foreground=[('pressed', 'red'), ('active', 'blue')],
+#     background=[('pressed', '!disabled', 'black'), ('active', 'white')]
+#     )
 
-# Loop is used to create multiple Radiobuttons
-# rather than creating each button separately
-for (text, value) in values.items():
-    Radiobutton(master, text = text, variable = v, 
-                value = value, indicator = 0,
-                background = "light blue").pack(fill = X, ipady = 5)
+# colored_btn = ttk.Button(text="Test", style="C.TButton").pack()
 
-# Infinite loop can be terminated by
-# keyboard or mouse interrupt
-# or by any predefined function (destroy())
-mainloop()
+# root.mainloop()
+
+# from tkinter import ttk
+# import tkinter
+
+# root = tkinter.Tk()
+
+# style = ttk.Style()
+# style.layout("TMenubutton", [
+#    ("Menubutton.background", None),
+#    ("Menubutton.button", {"children":
+#        [("Menubutton.focus", {"children":
+#            [("Menubutton.padding", {"children":
+#                [("Menubutton.label", {"side": "left", "expand": 1})]
+#            })]
+#        })]
+#    }),
+# ])
+
+# mbtn = ttk.Menubutton(text='Text')
+# mbtn.pack()
+# root.mainloop()
+
+import tkinter
+from tkinter import ttk
+
+
+
+import sv_ttk
+
+root = tkinter.Tk()
+
+button = ttk.Button(root, text="Click me!")
+button.pack()
+
+# This is where the magic happens
+
+
+root.mainloop()
