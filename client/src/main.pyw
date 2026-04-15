@@ -14,6 +14,9 @@ def main():
         traceback.print_exc()
         print(err)
         exit(1)
+    except Exception as e:
+        print(e)
+        exit(1)
 
 
 if __name__ == "__main__":

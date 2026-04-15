@@ -1,14 +1,11 @@
-
-
-class Client():
+class Client:
     def __init__(self, userObject):
-        self.first_name = userObject["first_name"]
-        self.last_name = userObject["last_name"]
-        self.oauth_token = userObject["oauth_token"]
-        self.callback_url = userObject["callback_url"]
-        self.client_id = userObject["client_id"]
+        self.first_name = userObject["firstName"]
+        self.last_name = userObject["lastName"]
+        self.oauth_token = userObject["oAuthToken"]
+        self.callback_url = userObject["callBackURL"]
+        self.client_id = userObject["clientID"]
 
-
-    #todo fiest gotta properly set up
+    # todo fiest gotta properly set up
     def printAttrib(self):
         print(self.first_name)
