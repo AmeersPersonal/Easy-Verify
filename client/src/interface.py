@@ -59,7 +59,7 @@ class verifyUI:
             print("Webcam error")
             return
 
-       # self.cameraInit()
+        self.cameraInit()
         self.uiFrame.after(
             0, self.runWebsocket
         )  # start the websocket server in the background so we can receive messages from the browser and update the UI accordingly
@@ -79,19 +79,32 @@ class verifyUI:
         )
 
     def cameraCapture(self):
-        _, frame = self.vid.read()
+        try:
+            
+            ret, frame = self.vid.read() #we care about the boolean value
+            
+            if not ret or frame is None:
+                raise Exception()
+            self.currentImage = frame
+            imageDisplay = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+            captured_image = Image.fromarray(imageDisplay)
 
-        self.currentImage = frame
-        imageDisplay = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
-        captured_image = Image.fromarray(imageDisplay)
+            photo_image = ImageTk.PhotoImage(image=captured_image)
+            self.camLabel.photo_image = photo_image
+            self.camLabel.configure(image=photo_image)
+            if self.record:
+                self.camLabel.after(1, self.cameraCapture)
+            else:
+                print("stopped camera")
+            
+        except Exception as e:
+            print("Camera not Found. Please close any apps using the camera, or check if it's disabled by the device")
+       
+            
+        
+        
 
-        photo_image = ImageTk.PhotoImage(image=captured_image)
-        self.camLabel.photo_image = photo_image
-        self.camLabel.configure(image=photo_image)
-        if self.record:
-            self.camLabel.after(1, self.cameraCapture)
-        else:
-            print("stopped camera")
+       
 
     def cameraInit(self):
         camWidth, camHeight = 600, 400
@@ -100,7 +113,10 @@ class verifyUI:
         # get camera input
         self.camLabel.pack()
         # catch next frame after 10 ms
-        #self.cameraCapture()
+      
+   
+        self.cameraCapture()
+
 
     def verifyAction(self):
         self.record = False
