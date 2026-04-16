@@ -307,7 +307,7 @@ class welcome_page:
         my_style = ttk.Style()
         my_style.configure('continue.TButton', font = ("Helvetica", 18, "bold"))
         continue_button = ttk.Button(
-            self.uiFrame, text="Continue", style = 'continue.TButton', command= lambda x= self.selected_choice.get(): self.user_choice(x)
+            self.uiFrame, text="Continue", style = 'continue.TButton', command=  self.user_choice
         )
         continue_button.pack(fill = tkinter.X, ipady = 3)
 
@@ -319,18 +319,21 @@ class welcome_page:
         "Yes": "1",
         "No": "2",
         }
-
+        self.current_value = "1"
         for text, value in values.items():
             tkinter.Radiobutton(
-                self.uiFrame, text=text,font=("Helvetica", 24, "bold"), variable=self.selected_choice, value=value, indicator=0, foreground="dark blue", background="light blue"
-            ).pack(fill= tkinter.X, ipady=5)
+                self.uiFrame, text=text,font=("Helvetica", 24, "bold"), variable=self.selected_choice, value=value, indicator=0, foreground="dark blue", background="light blue",
+                command = lambda x = value: self.on_click(x) ).pack(fill= tkinter.X, ipady=5, )
+            
 
-      
+    def on_click(self, value):
+        self.current_value = value
+    
         
-    def user_choice(self, choice):
-        if choice == "1":
+    def user_choice(self):
+        if self.current_value == "1":
             print("User chose Yes")
-        elif choice == "2":
+        elif self.current_value == "2":
             print("User chose No")
         
         self.mainUI.switchFromWelcomePage()
