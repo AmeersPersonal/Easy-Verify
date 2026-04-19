@@ -4,6 +4,7 @@ import json
 import base64
 import traceback
 import threading
+from util.client import Client
 from util.encryptKeys import encryptor
 
 wsLoop = None
@@ -19,13 +20,15 @@ async def handler(websocket):
         print("Client connected")
         print("Sending Key")
         e = encryptor()
-        await websocket.send(json.dumps(e.getPublicKeyPEM().decode('utf-8')))
+        await websocket.send(json.dumps(e.getPublicKeyPEM().decode("utf-8")))
         encryptedB64 = await websocket.recv()
         encrypted = base64.b64decode(encryptedB64.strip())
         apiAndAuth = e.decrypt(encrypted).decode()
         print("got cyphertext and decrypted it")
         print(apiAndAuth)
-        print(json.loads(apiAndAuth))
+
+        userClient = Client(json.loads(apiAndAuth))
+        userClient.printAttrib()  # temporary
 
         verifyEvent.wait()
 
@@ -42,7 +45,6 @@ async def handler(websocket):
         stopSocket()
 
 
-
 async def openSocket():
     async with websockets.serve(handler, "localhost", 8765) as server:
         print("Starting WebSocket server on ws://localhost:8765")
@@ -52,10 +54,14 @@ async def openSocket():
         await server.wait_closed()  # run forever or until closed
     return True
 
+
 def stopSocket():
-    if wsLoop and wsLoop.is_running(): #get the loop then end it gracefully on app close
+    if (
+        wsLoop and wsLoop.is_running()
+    ):  # get the loop then end it gracefully on app close
         print("closing")
         wsLoop.call_soon_threadsafe(wsLoop.stop)
+
 
 def finishVerify():
     if wsLoop and wsLoop.is_running() and isConnected:
