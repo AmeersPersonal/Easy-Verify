@@ -1,11 +1,11 @@
 import tkinter
 from tkinter import ttk
-
+from tkinter import messagebox
 import darkdetect
 import cv2
 import numpy as np
 import sv_ttk
-import tk_async_execute as tae
+# import tk_async_execute as tae
 from PIL import Image, ImageTk
 
 from util.resources import resource_path
@@ -74,16 +74,17 @@ class verifyUI:
         goBack = tkinter.Button(self.uiFrame, text= "Back", font=("Helvetica", 16, "bold"), foreground="dark blue", background="light blue", command = self.mainUI.switchToWelcomePage)
         goBack.pack(side="top", anchor="nw")
     def runWebsocket(self):
-        tae.async_execute(
-            openSocket(), visible=False, pop_up=False, master=self.uiFrame
-        )
+        print("eh")
+        # tae.async_execute(
+        #     openSocket(), visible=False, pop_up=False, master=self.mainUI.root
+        # )
 
     def cameraCapture(self):
         try:
             
             ret, frame = self.vid.read() #we care about the boolean value
             
-            if not ret or frame is None:
+            if not ret or frame is None: 
                 raise Exception()
             self.currentImage = frame
             imageDisplay = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
@@ -98,7 +99,10 @@ class verifyUI:
                 print("stopped camera")
             
         except Exception as e:
-            print("Camera not Found. Please close any apps using the camera, or check if it's disabled by the device")
+            messagebox.showerror("No Camera Found", "Camera not Found. Please close any apps using the camera, or check if it's disabled by the device."
+                                   " Refresh the website to reverify.") 
+            self.mainUI.root.destroy()
+           
        
             
         
@@ -257,12 +261,12 @@ class mainUI:
     def runUI(self):
         # self.switchVerify() # we start with the verification ui,
         self.switchToWelcomePage()
-        tae.start()
+        # tae.start()
         self.root.protocol(
             "WM_DELETE_WINDOW", self.exitProgram
         )  # cleanup the websocket after closing the application
         self.root.mainloop()
-        tae.stop()
+        # tae.stop()
 
     
   

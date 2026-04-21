@@ -1,5 +1,5 @@
 import sys, traceback
-from interface import mainUI
+from verification.interface import mainUI
 
 
 def main():
