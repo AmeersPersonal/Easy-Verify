@@ -19,4 +19,3 @@
 - We recieve this key, then we encrypt an AES key using that public key, this gets sent through ngrok back to the client app
 (Client)
 - Decrypt the AES key, then we use it like normal AES-GCM to send encrypted info
-
