@@ -20,8 +20,12 @@ async def handler(websocket):
         print("Client connected")
         print("Sending Key")
         e = encryptor()
-        await websocket.send(json.dumps(e.getPublicKeyPEM().decode("utf-8")))
-        encryptedB64 = await websocket.recv()
+        sendData = {'responseType': 'public_key', 'response': e.getPublicKeyPEM().decode("utf-8")}
+        await websocket.send(json.dumps(sendData))
+
+        jsonRecieved = await websocket.recv()
+        encryptedB64 = json.loads(jsonRecieved)['message']
+        print(encryptedB64)
         encrypted = base64.b64decode(encryptedB64.strip())
         apiAndAuth = e.decrypt(encrypted).decode()
         print("got cyphertext and decrypted it")
@@ -32,7 +36,8 @@ async def handler(websocket):
 
         verifyEvent.wait()
 
-        await websocket.send("Verification complete")
+        verifyDone = {'responseType': 'verifyStatus', 'response': 'OK'}
+        await websocket.send(json.dumps(verifyDone))
         print("Transaction complete")
     except ValueError:
         print("Key Error")
