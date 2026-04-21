@@ -1,8 +1,10 @@
 import sys, traceback
 from interface import mainUI
+from util.db.database import Database;
 
 
 def main():
+    Database()._create_tables()
     # The first command line arugument passes the entire URL that activated the application
     # so we can use that to trigger the application to open and do something with the URL data.
     print("URL:", sys.argv[1:])

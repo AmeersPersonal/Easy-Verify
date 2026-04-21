@@ -1,20 +1,75 @@
-const { callProcedure } = require("../db/procedureClient");
+const { get, run, dbReady } = require("../config/database");
 
-async function getUserByIdentifier(identifier) {
-    const rows = await callProcedure("get_user", [identifier]);
-    return rows[0] || null;
+async function getCompanyByEmail(email) {
+    await dbReady;
+    return get(
+        `
+            SELECT id, name, email, pw, verified
+            FROM companyx
+            WHERE email = ?
+            LIMIT 1
+        `,
+        [email]
+    );
 }
 
-async function insertUser({ username, email, passwordHash, isPersistent }) {
-    await callProcedure("insert_user", [username, email, passwordHash, isPersistent ? 1 : 0]);
+async function addCompanyUser({ email, name, passwordHash}) {
+    await dbReady;
+    await run(
+        `
+            INSERT INTO companyx (name, email, pw, verified)
+            VALUES (?, ?, ?, 0)
+        `,
+        [name, email, passwordHash]
+    );
 }
 
-async function updateLastLogin(userId) {
-    await callProcedure("update_last_login", [userId]);
+async function updateCompanyVerificationByEmail(email, verified) {
+    await dbReady;
+    await run(
+        `
+            UPDATE companyx
+            SET verified = ?
+            WHERE email = ?
+        `,
+        [verified ? 1 : 0, email]
+    );
+}
+
+async function isCompanyVerified(email) {
+    await dbReady;
+    const row = await get(
+        `
+            SELECT verified
+            FROM companyx
+            WHERE email = ?
+            LIMIT 1
+        `,
+        [email]
+    );
+
+    return row ? Boolean(row.verified) : false;
+}
+
+async function companyEmailExists(email) {
+    await dbReady;
+    const row = await get(
+        `
+            SELECT 1 AS exists_flag
+            FROM companyx
+            WHERE email = ?
+            LIMIT 1
+        `,
+        [email]
+    );
+
+    return Boolean(row);
 }
 
 module.exports = {
-    getUserByIdentifier,
-    insertUser,
-    updateLastLogin,
+    addCompanyUser,
+    companyEmailExists,
+    getCompanyByEmail,
+    isCompanyVerified,
+    updateCompanyVerificationByEmail,
 };
