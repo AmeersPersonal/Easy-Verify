@@ -1,8 +1,8 @@
 import sys, traceback
-from interface import mainUI
+
 from util.db.database import Database
 import time
-from verification.interface import mainUI
+from verification.mainui import mainUI
 
 
 def main():
