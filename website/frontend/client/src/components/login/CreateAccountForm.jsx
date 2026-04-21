@@ -101,6 +101,13 @@ export default function CreateAccountForm({ prefillEmail }) {
                 sx={textFieldSx}
             />
             <Button type="submit" variant="contained">Create Account</Button>
+            <Button
+                type="button"
+                variant="text"
+                onClick={() => navigate("/login", { state: { email } })}
+            >
+                Already have an account? Login
+            </Button>
         </Box>
     );
 }

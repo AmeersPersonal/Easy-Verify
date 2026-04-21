@@ -84,6 +84,13 @@ export default function LoginForm() {
                 sx={textFieldSx}
             />
             <Button type="submit" variant="contained">Login</Button>
+            <Button
+                type="button"
+                variant="text"
+                onClick={() => navigate("/create-account", { state: { email } })}
+            >
+                Need an account? Create one
+            </Button>
         </Box>
     );
 }
