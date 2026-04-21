@@ -21,21 +21,40 @@ export default function CreateAccountForm({ prefillEmail }) {
             return;
         }
 
-        navigate("/verify")
+        const username = email.split("@")[0]?.trim();
+        if (!username) {
+            setError("Please enter a valid email.");
+            return;
+        }
 
-        // const res = await fetch("/api/create-account", {
-        //     method: "POST",
-        //     headers: { "Content-Type": "application/json" },
-        //     body: JSON.stringify({ email, password }),
-        // });
+        try {
+            const res = await fetch("/api/auth/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    username,
+                    email,
+                    password,
+                    isPersistent: false,
+                }),
+            });
 
-        // if (res.status === 201) {
-        //     const { token } = await res.json();
-        //     localStorage.setItem("token", token);
-        //     navigate("/dashboard");
-        // } else if (res.status === 409) {
-        //     setError("An account with that email already exists.");
-        // }
+            const payload = await res.json().catch(() => ({}));
+
+            if (res.status === 201) {
+                navigate("/verify", { state: { email } });
+                return;
+            }
+
+            if (res.status === 409) {
+                setError(payload?.message || "An account with that email already exists.");
+                return;
+            }
+
+            setError(payload?.message || "Unable to create account right now.");
+        } catch (_err) {
+            setError("Unable to reach server. Please try again.");
+        }
     };
 
     const textFieldSx = {
@@ -82,6 +101,13 @@ export default function CreateAccountForm({ prefillEmail }) {
                 sx={textFieldSx}
             />
             <Button type="submit" variant="contained">Create Account</Button>
+            <Button
+                type="button"
+                variant="text"
+                onClick={() => navigate("/login", { state: { email } })}
+            >
+                Already have an account? Login
+            </Button>
         </Box>
     );
 }

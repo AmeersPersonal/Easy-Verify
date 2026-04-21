@@ -2,6 +2,9 @@ from LLMs.llm import estimate_age, FAILED_STATUS_CODE
 from util.webSocketHandler import finishVerify
 
 
+
+
+
 def startVerification(img1, img2, img3, callUI):
     print("starting verification")
     result = 0

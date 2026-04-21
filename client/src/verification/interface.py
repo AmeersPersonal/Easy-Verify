@@ -66,11 +66,11 @@ class verifyUI:
         # self.verifyFrame.after(10,self.cameraAction)
         #
         self.go_back_to_welcome()
-    
-    
+
+
     def go_back_to_welcome(self):
         print("GO back on")
-      
+
         goBack = tkinter.Button(self.uiFrame, text= "Back", font=("Helvetica", 16, "bold"), foreground="dark blue", background="light blue", command = self.mainUI.switchToWelcomePage)
         goBack.pack(side="top", anchor="nw")
     def runWebsocket(self):
@@ -81,7 +81,7 @@ class verifyUI:
 
     def cameraCapture(self):
         try:
-            
+
             ret, frame = self.vid.read() #we care about the boolean value
             
             if not ret or frame is None: 
@@ -97,7 +97,7 @@ class verifyUI:
                 self.camLabel.after(1, self.cameraCapture)
             else:
                 print("stopped camera")
-            
+
         except Exception as e:
             messagebox.showerror("No Camera Found", "Camera not Found. Please close any apps using the camera, or check if it's disabled by the device."
                                    " Refresh the website to reverify.") 
@@ -108,7 +108,7 @@ class verifyUI:
         
         
 
-       
+
 
     def cameraInit(self):
         camWidth, camHeight = 600, 400
@@ -117,20 +117,21 @@ class verifyUI:
         # get camera input
         self.camLabel.pack()
         # catch next frame after 10 ms
-      
-   
+
+
         self.cameraCapture()
 
 
     def verifyAction(self):
-        self.record = False
-        if self.verificationState >= 3:
-            print("error state")
-            print(f"test + {self.verificationState}")
+        startVerification(self.img1, self.img2, self.img3, self)
+        # self.record = False
+        # if self.verificationState >= 3:
+        #     print("error state")
+        #     print(f"test + {self.verificationState}")
 
-        else:
-            self.mainUI.confirmInterface.updateImage(self.currentImage)
-            self.mainUI.switchVerifyToConfirm()
+        # else:
+        #     self.mainUI.confirmInterface.updateImage(self.currentImage)
+        #     self.mainUI.switchVerifyToConfirm()
 
     def confirmImage(self):
         # confirm image, but don't pass to next screen
@@ -218,15 +219,15 @@ class settingsUI:
         )
         settingsButton.pack()
         self.change_theme()
-    
+
 
     def change_theme(self):
         frame = self.uiFrame
-        
+
         toggle_theme = ttk.Button(frame, text = "Toggle theme", command = sv_ttk.toggle_theme)
         toggle_theme.pack()
-        
-    
+
+
 
 class mainUI:
 
@@ -253,7 +254,7 @@ class mainUI:
         self.settingsInterface = settingsUI(self)
         self.welcomeInterface = welcome_page(self)
         self.confirmInterface = confirmScreen(self)
-   
+
     #  self.signInInterface = sign_in(self)
 
     # make 3 objects for each ui, then switch between them all
@@ -268,8 +269,8 @@ class mainUI:
         self.root.mainloop()
         # tae.stop()
 
-    
-  
+
+
     def switchUI(self, fromFrame, toFrame):
         # if the old frame is visible, we hide it
         if fromFrame.winfo_viewable():
@@ -283,7 +284,7 @@ class mainUI:
             toFrame.tkraise()
         else:
             print("to frame already visible")
-    
+
 
 
     def switchVerify(self):
@@ -322,7 +323,7 @@ class welcome_page:
         label = ttk.Label(self.uiFrame, text=labelText, font=("Helvetica", 24, "bold"))
         label.pack(pady=30)
         self.var = tkinter.IntVar(value=1)
-    
+
         self.Welcome_Buttons()
         my_style = ttk.Style()
         my_style.configure('continue.TButton', font = ("Helvetica", 18, "bold"))
@@ -344,22 +345,22 @@ class welcome_page:
             tkinter.Radiobutton(
                 self.uiFrame, text=text,font=("Helvetica", 24, "bold"), variable=self.selected_choice, value=value, indicator=0, foreground="dark blue", background="light blue",
                 command = lambda x = value: self.on_click(x) ).pack(fill= tkinter.X, ipady=5, )
-            
+
 
     def on_click(self, value):
         self.current_value = value
-    
-        
+
+
     def user_choice(self):
         if self.current_value == "1":
             print("User chose Yes")
         elif self.current_value == "2":
             print("User chose No")
-        
+
         self.mainUI.switchFromWelcomePage()
 
-        
-    
+
+
 
 # class sign_in:
 #     def __init__(self, mainUI):

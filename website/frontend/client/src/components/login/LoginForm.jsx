@@ -15,25 +15,37 @@ export default function LoginForm() {
         e.preventDefault();
         setError("");
 
-        const res = await fetch("/api/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password }),
-        });
+        try {
+            const res = await fetch("/api/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password }),
+            });
 
-        if (res.status === 404) {
-            navigate("/create-account", { state: { email } });
+            const payload = await res.json().catch(() => ({}));
+
+            if (res.status === 200) {
+                if (payload?.token) {
+                    localStorage.setItem("token", payload.token);
+                }
+                navigate("/verify");
+                return;
+            }
+
+            if (res.status === 404) {
+                navigate("/create-account", { state: { email } });
+                return;
+            }
+
+            if (res.status === 401) {
+                setError(payload?.message || "Invalid email or password.");
+                return;
+            }
+
+            setError(payload?.message || "Unable to login right now.");
+        } catch (_err) {
+            setError("Unable to reach server. Please try again.");
         }
-
-        // if (res.status === 200) {
-        //     const { token } = await res.json();
-        //     localStorage.setItem("token", token);
-        //     // navigate("/dashboard");
-        // } else if (res.status === 401) {
-        //     setError("Invalid email or password.");
-        // } else if (res.status === 404) {
-        //     navigate("/create-account", { state: { email } });
-        // }
     };
 
     const textFieldSx = {
@@ -72,6 +84,13 @@ export default function LoginForm() {
                 sx={textFieldSx}
             />
             <Button type="submit" variant="contained">Login</Button>
+            <Button
+                type="button"
+                variant="text"
+                onClick={() => navigate("/create-account", { state: { email } })}
+            >
+                Need an account? Create one
+            </Button>
         </Box>
     );
 }
