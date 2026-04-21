@@ -8,3 +8,4 @@ dist/
 *toc
 .zed/
 node_modules
+**/easyverify.db
