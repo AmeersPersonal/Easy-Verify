@@ -1,38 +1,24 @@
-const express = require('express')
-const jwt = require('jsonwebtoken')
-const bcrypt = require('bcrypt')
+require("./config/dotenv");
+
+const express = require("express");
+const authRoutes = require("./routes/authRoutes");
 
 const app = express();
+
 app.use(express.json());
 
-const JWT_SECRET = process.env.JWT_SECRET;
+app.get("/api/health", (_req, res) => {
+    res.status(200).json({ ok: true });
+});
 
-// define routes
-app.post("/api/login", async (req, res) => {
-    const { email, password } = req.body;
+app.use("/api/auth", authRoutes);
 
-    // Implement 404 status as of right now to simulate always creating a new user
-    return res.status(404)
+app.use((err, _req, res, _next) => {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+});
 
-
-    // const passwordHash = await findPasswordHashByEmail(email); // TODO: implement DB query
-    // if (!passwordHash) {
-    //     return res.status(404).json({ message: "No account associated with that email" });
-    // }
-
-    // const passwordMatch = await bcrypt.compare(password, passwordHash);
-    // if (!passwordMatch) {
-    //     return res.status(401).json({ message: "Invalid email or password" });
-    // }
-
-    // const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: '7d' });
-    // return res.status(200).json({ token, email });
-})
-
-app.listen(3000)
-
-// define listeners
-
-// userclass
-// sign in (UID)
-// 
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Backend listening on port ${PORT}`);
+});

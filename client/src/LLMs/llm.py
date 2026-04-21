@@ -43,11 +43,16 @@ def estimate_age(img1, img2, img3) -> int:
 
             # deals with multiple faces
             if isinstance(analysis, list):
-                traceback.print_exc()
-                raise Exception
+                if len(analysis) > 1:
+                    print("Multiple faces detected, skipping image.")
+                    raise ValueError("Multiple faces detected")
+                age = analysis[0]["age"]
+                estimated_age.append(age)
+                
             else:
                 age = analysis["age"]
                 estimated_age.append(age)
+
 
     except ValueError:
         print("VALUE ERROR")
