@@ -105,15 +105,15 @@ class verifyUI:
 
 
     def verifyAction(self):
-        startVerification(self.img1, self.img2, self.img3, self)
-        # self.record = False
-        # if self.verificationState >= 3:
-        #     print("error state")
-        #     print(f"test + {self.verificationState}")
+        # startVerification(self.img1, self.img2, self.img3, self)
+        self.record = False
+        if self.verificationState >= 3:
+            print("error state")
+            print(f"test + {self.verificationState}")
 
-        # else:
-        #     self.mainUI.confirmInterface.updateImage(self.currentImage)
-        #     self.mainUI.switchVerifyToConfirm()
+        else:
+            self.mainUI.confirmInterface.updateImage(self.currentImage)
+            self.mainUI.switchVerifyToConfirm()
 
     def confirmImage(self):
         # confirm image, but don't pass to next screen
