@@ -36,8 +36,9 @@ def estimate_age(img1, img2, img3) -> int:
 
     try:
         for img in img_list:
+            counter = 0
             analysis = DeepFace.analyze(
-                img_path=img, actions=["age"], enforce_detection=False, silent=True, detector_backend="opencv"
+                img_path=img, actions=["age"], enforce_detection=False, silent=True, detector_backend="retinaface", align =True
             )
             print(analysis)
 
@@ -48,15 +49,16 @@ def estimate_age(img1, img2, img3) -> int:
                     raise ValueError("Multiple faces detected")
                 age = analysis[0]["age"]
                 estimated_age.append(age)
+                counter += 1
                 
             else:
+                counter += 1
                 age = analysis["age"]
                 estimated_age.append(age)
 
 
     except ValueError:
         print("VALUE ERROR")
-        
         pass
     except Exception as e:
         print("UNKNOWN ERROR")
@@ -71,7 +73,7 @@ def estimate_age(img1, img2, img3) -> int:
 
     final_guess = round(sum(estimated_age) / len(estimated_age))
 
-    return final_guess
+    return final_guess - 7
 
 
 def verify_user_id(img1, img2) -> bool:

@@ -105,7 +105,7 @@ class verifyUI:
 
 
     def verifyAction(self):
-        #startVerification(self.img1, self.img2, self.img3, self)
+        # startVerification(self.img1, self.img2, self.img3, self)
         self.record = False
         if self.verificationState >= 3:
             print("error state")

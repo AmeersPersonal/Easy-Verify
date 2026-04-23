@@ -28,7 +28,17 @@ export default function LoginForm() {
                 if (payload?.token) {
                     localStorage.setItem("token", payload.token);
                 }
-                navigate("/verify");
+
+                if (payload?.user) {
+                    localStorage.setItem("user", JSON.stringify(payload.user));
+                    localStorage.setItem("accountEmail", payload.user.email || email);
+                } else {
+                    localStorage.setItem("accountEmail", email);
+                }
+
+                navigate("/dashboard", {
+                    state: { email: payload?.user?.email || email },
+                });
                 return;
             }
 

@@ -13,26 +13,43 @@ async function getCompanyByEmail(email) {
     );
 }
 
+async function companyIdExists(userId) {
+    await dbReady;
+    const row = await get(
+        `
+            SELECT 1 AS exists_flag
+            FROM companyx
+            WHERE id = ?
+            LIMIT 1
+        `,
+        [userId]
+    );
+
+    return Boolean(row);
+}
+
 async function addCompanyUser({ email, name, passwordHash}) {
     await dbReady;
-    await run(
+    const result = await run(
         `
             INSERT INTO companyx (name, email, pw, verified)
             VALUES (?, ?, ?, 0)
         `,
         [name, email, passwordHash]
     );
+
+    return result.lastID;
 }
 
-async function updateCompanyVerificationByEmail(email, verified) {
+async function updateCompanyVerificationById(userId, verified) {
     await dbReady;
     await run(
         `
             UPDATE companyx
             SET verified = ?
-            WHERE email = ?
+            WHERE id = ?
         `,
-        [verified ? 1 : 0, email]
+        [verified ? 1 : 0, userId]
     );
 }
 
@@ -68,8 +85,9 @@ async function companyEmailExists(email) {
 
 module.exports = {
     addCompanyUser,
+    companyIdExists,
     companyEmailExists,
     getCompanyByEmail,
     isCompanyVerified,
-    updateCompanyVerificationByEmail,
+    updateCompanyVerificationById,
 };

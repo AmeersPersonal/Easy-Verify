@@ -58,13 +58,15 @@ async function register(req, res) {
 
 async function setVerification(req, res) {
     try {
-        const { email, verified } = req.body;
-        if (!email || typeof verified === "undefined") {
-            return res.status(400).json({ message: "email and verified are required" });
+        const { userId, verified } = req.body;
+        const normalizedUserId = Number(userId);
+
+        if (!Number.isInteger(normalizedUserId) || normalizedUserId <= 0 || typeof verified === "undefined") {
+            return res.status(400).json({ message: "userId and verified are required" });
         }
 
         const result = await authService.setUserVerification({
-            email,
+            userId: normalizedUserId,
             verified,
         });
 

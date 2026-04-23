@@ -36,28 +36,36 @@ async function registerUser({ name, email, password }) {
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
-    await userRepository.addCompanyUser({ email, name, passwordHash});
+    const userId = await userRepository.addCompanyUser({ email, name, passwordHash});
 
     return {
         ok: true,
         status: 201,
-        data: { message: "Company user created" },
+        data: {
+            message: "Company user created",
+            user: {
+                id: userId,
+                name,
+                email,
+                verified: false,
+            },
+        },
     };
 }
 
-async function setUserVerification({ email, verified }) {
-    const exists = await userRepository.companyEmailExists(email);
+async function setUserVerification({ userId, verified }) {
+    const exists = await userRepository.companyIdExists(userId);
     if (!exists) {
-        return { ok: false, status: 404, message: "No account associated with that email" };
+        return { ok: false, status: 404, message: "No account associated with that user ID" };
     }
 
-    await userRepository.updateCompanyVerificationByEmail(email, verified);
+    await userRepository.updateCompanyVerificationById(userId, verified);
 
     return {
         ok: true,
         status: 200,
         data: {
-            email,
+            userId,
             verified: Boolean(verified),
             verifiedValue: verified ? 1 : 0,
         },
