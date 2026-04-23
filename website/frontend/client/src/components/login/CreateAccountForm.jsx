@@ -42,7 +42,8 @@ export default function CreateAccountForm({ prefillEmail }) {
             const payload = await res.json().catch(() => ({}));
 
             if (res.status === 201) {
-                navigate("/verify", { state: { email } });
+                localStorage.setItem("accountEmail", email);
+                navigate("/dashboard", { state: { email } });
                 return;
             }
 
