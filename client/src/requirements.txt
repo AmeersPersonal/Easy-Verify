@@ -15,8 +15,11 @@ pyinstaller
 
 #needed for pyinstaller to convert the icon for the executable
 pillow
+
+
 #run async operations alongside
 tkinter-async-execute
 # cryptography
 cryptography
 easyocr
+darkdetect

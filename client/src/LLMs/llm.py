@@ -1,15 +1,27 @@
-from deepface import DeepFace
 import cv2
 import easyocr
 import re
 from datetime import datetime
 import os
 import traceback
+import threading
 
 #TODO:
 # run llm in different thread than main
 # initialize llm in different thread than main, just so the program doesn't lag during verification process
 # automatically include weights in the build folder, so it doesn't remake the deepface folder every time we install
+
+DeepFace = None
+
+importEvent = threading.Event()
+
+def importAI():
+    print("importing llm")
+    global DeepFace
+    from deepface import DeepFace
+    importEvent.set()
+    print("imported LLM")
+
 
 # we should use this for when to store the photo of the person and when to delete it, we can also use it to store the photos of the ID for a short period of time
 PHOTO_DIR = os.path.dirname(os.path.realpath(__file__)) + "/temp_photos"
@@ -30,6 +42,8 @@ def estimate_age(img1, img2, img3) -> int:
     img paramters are img paths
     The AI will exmaine 3 images and will give an estimate age of the user
     """
+    #wait until the llm is imported
+    importEvent.wait()
 
     img_list = [img1, img2, img3]
     estimated_age = []
@@ -50,7 +64,7 @@ def estimate_age(img1, img2, img3) -> int:
                 age = analysis[0]["age"]
                 estimated_age.append(age)
                 counter += 1
-                
+
             else:
                 counter += 1
                 age = analysis["age"]
@@ -58,6 +72,7 @@ def estimate_age(img1, img2, img3) -> int:
 
 
     except ValueError as e:
+        print(e)
         return counter
     except Exception as e:
         print("UNKNOWN ERROR")

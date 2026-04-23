@@ -12,9 +12,10 @@ from util.resources import resource_path
 from util.webSocketHandler import openSocket, stopSocket
 
 
-from verification.verifyAndConfirm import verifyUI, confirmScreen
-from verification.welcome import welcome_page
-from verification.settings import settingsUI
+from interface.verifyAndConfirm import verifyUI, confirmScreen
+from interface.welcome import welcome_page
+from interface.settings import settingsUI
+from interface.loadingScreen import loadingScreen
 
 
 class mainUI:
@@ -42,14 +43,17 @@ class mainUI:
         self.settingsInterface = settingsUI(self)
         self.welcomeInterface = welcome_page(self)
         self.confirmInterface = confirmScreen(self)
+        self.loadingScreen = loadingScreen(self)
+
 
     #  self.signInInterface = sign_in(self)
 
     # make 3 objects for each ui, then switch between them all
     # start with the verifyui
     def runUI(self):
-        # self.switchVerify() # we start with the verification ui,
-        self.switchToWelcomePage()
+        self.switchUI(self.settingsInterface.uiFrame, self.loadingScreen.uiFrame)
+        self.loadingScreen.loadingCircle()
+        # self.switchToWelcomePage()
         # tae.start()
         self.root.protocol(
             "WM_DELETE_WINDOW", self.exitProgram

@@ -83,8 +83,8 @@ class verifyUI:
         try:
 
             ret, frame = self.vid.read() #we care about the boolean value
-            
-            if not ret or frame is None: 
+
+            if not ret or frame is None:
                 raise Exception()
             self.currentImage = frame
             imageDisplay = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
@@ -99,11 +99,12 @@ class verifyUI:
                 print("stopped camera")
 
         except Exception as e:
+            print(e)
             messagebox.showerror("No Camera Found", "Camera not Found. Please close any apps using the camera, or check if it's disabled by the device."
-                                   " Refresh the website to reverify.") 
+                                   " Refresh the website to reverify.")
             self.mainUI.root.destroy()
-           
-       
+
+
 
     def cameraInit(self):
         camWidth, camHeight = 600, 400

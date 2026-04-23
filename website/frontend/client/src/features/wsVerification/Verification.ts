@@ -3,6 +3,7 @@ import JSEncrypt from "jsencrypt";
 
 import { ClientToApp, ServerToClient, CurrentState } from "./states";
 import { JSXElementConstructor } from "react";
+// TODO: add listeners for UI
 
 type User = {
   first_name?: string;

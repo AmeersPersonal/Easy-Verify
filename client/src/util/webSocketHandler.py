@@ -2,7 +2,6 @@ import asyncio
 import websockets
 import json
 import base64
-import traceback
 import threading
 from util.client import Client
 from util.encryptKeys import encryptor
