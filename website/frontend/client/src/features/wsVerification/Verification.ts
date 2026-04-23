@@ -35,7 +35,7 @@ export class Verifier {
 
   constructor(
     url: string = "ws://localhost:8765",
-    apiUrl = "TEST",
+    apiUrl = "http://localhost:3000/api/auth/verify",
   ) {
     this.currentUser = {
       oAuthToken: "TEST",
