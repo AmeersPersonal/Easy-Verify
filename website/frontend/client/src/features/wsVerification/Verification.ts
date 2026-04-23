@@ -1,15 +1,12 @@
 import { useWebSocket } from "./WebSocketHandler";
 import JSEncrypt from "jsencrypt";
 
-import { ClientToApp, ServerToClient, CurrentState } from "./states";
-import { JSXElementConstructor } from "react";
+import { CurrentState } from "./states";
 
 type User = {
-  first_name?: string;
-  last_name?: string;
   oAuthToken?: string;
   callback_url?: string;
-  client_id?: string;
+    client_id?: string;
 };
 
 function isUser(value: unknown): value is User {
@@ -24,11 +21,9 @@ function isUser(value: unknown): value is User {
   //
   // */
   return (
-    (v.first_name === undefined || typeof v.first_name === "string") &&
-    (v.last_name === undefined || typeof v.last_name === "string") &&
     (v.oAuthToken === undefined || typeof v.oAuthToken === "string") &&
     (v.callback_url === undefined || typeof v.callback_url === "string") &&
-    (v.client_id === undefined || typeof v.client_id === "string")
+      (v.client_id === undefined || typeof v.client_id === "string")
   );
 }
 
@@ -41,17 +36,12 @@ export class Verifier {
   constructor(
     url: string = "ws://localhost:8765",
     apiUrl = "TEST",
-    newUser?: User,
   ) {
-    this.currentUser = isUser(newUser)
-      ? (newUser as User)
-      : {
-          first_name: "John",
-          last_name: "Doe",
-          oAuthToken: "TEST",
-          callback_url: apiUrl,
-          client_id: "TEST",
-        };
+    this.currentUser = {
+      oAuthToken: "TEST",
+      callback_url: apiUrl,
+      client_id: "TEST",
+    };
 
     this.socket = new useWebSocket(url);
 
@@ -84,7 +74,23 @@ export class Verifier {
       this.state = status === "OK" ? "done" : status === "FAIL" ? "fail" : "error";
     });
   }
-  startConnect() {
+
+  setUserContext(user: User) {
+    if (!isUser(user)) {
+      throw new Error("Invalid user context");
+    }
+
+    this.currentUser = {
+      ...this.currentUser,
+      ...user,
+    };
+  }
+
+  startConnect(userId?: string) {
+    if (userId) {
+      this.setUserContext({ client_id: userId });
+    }
+
     this.socket.connect();
   }
 }

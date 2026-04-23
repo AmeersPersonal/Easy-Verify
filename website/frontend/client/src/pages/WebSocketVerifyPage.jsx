@@ -2,14 +2,18 @@ import { Verifier } from "../features/wsVerification/Verification";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Card from "@mui/material/Card";
 import { useLocation } from 'react-router-dom';
 
 
 function WebSocketVerifyPage() {
     const location = useLocation();
-    const email = location.state?.email || localStorage.getItem('accountEmail') || 'unknown';
+    const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+    const email = location.state?.email || storedUser?.email || localStorage.getItem('accountEmail') || 'unknown';
+    const userId = location.state?.userId ?? storedUser?.id ?? null;
+    const isUserIdConfigured = userId !== null && typeof userId !== 'undefined';
+    const [submitError, setSubmitError] = useState('');
 
     const isVerifying = false;
     const isSocketOpen = false;
@@ -19,10 +23,16 @@ function WebSocketVerifyPage() {
 
     function handleSubmit(event) {
         event.preventDefault();
+        setSubmitError('');
+
+        if (!isUserIdConfigured) {
+            setSubmitError('Please log in before verifying');
+            return;
+        }
 
         try {
             verifier.current = new Verifier();
-            verifier.current.startConnect();
+            verifier.current.startConnect(String(userId));
             window.location.href = "easy-verify://verifyDemoClient";
 
         } catch (error) {
@@ -76,6 +86,12 @@ function WebSocketVerifyPage() {
                 <Button type="submit" variant="contained" size="large">
                     Verify
                 </Button>
+
+                {submitError && (
+                    <Typography variant="body1" color="error.main">
+                        {submitError}
+                    </Typography>
+                )}
 
                 {isVerifying ? (
                     verifyStatus ? (

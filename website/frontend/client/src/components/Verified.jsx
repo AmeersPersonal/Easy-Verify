@@ -72,7 +72,14 @@ export default function Verified({ account, isLoading, error }) {
                     <Button
                         variant="contained"
                         sx={{ bgcolor: '#1e88e5', '&:hover': { bgcolor: '#1565c0' } }}
-                        onClick={() => navigate('/verify', { state: { email: account?.email } })}
+                        onClick={() =>
+                            navigate('/verify', {
+                                state: {
+                                    email: account?.email,
+                                    userId: account?.id,
+                                },
+                            })
+                        }
                     >
                         Verify Account
                     </Button>
