@@ -20,3 +20,5 @@ def startVerification(img1, img2, img3, callUI):
     else:
         print(result)
         finishVerify()  # maybe pass estimated age here
+        
+        

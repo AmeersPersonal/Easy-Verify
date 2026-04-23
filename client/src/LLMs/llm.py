@@ -37,7 +37,7 @@ def estimate_age(img1, img2, img3) -> int:
     try:
         for img in img_list:
             analysis = DeepFace.analyze(
-                img_path=img, actions=["age"], enforce_detection=True, silent=True
+                img_path=img, actions=["age"], enforce_detection=False, silent=True, detector_backend="opencv"
             )
             print(analysis)
 
@@ -56,6 +56,7 @@ def estimate_age(img1, img2, img3) -> int:
 
     except ValueError:
         print("VALUE ERROR")
+        
         pass
     except Exception as e:
         print("UNKNOWN ERROR")
