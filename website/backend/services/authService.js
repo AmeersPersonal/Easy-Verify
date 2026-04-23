@@ -36,12 +36,20 @@ async function registerUser({ name, email, password }) {
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
-    await userRepository.addCompanyUser({ email, name, passwordHash});
+    const userId = await userRepository.addCompanyUser({ email, name, passwordHash});
 
     return {
         ok: true,
         status: 201,
-        data: { message: "Company user created" },
+        data: {
+            message: "Company user created",
+            user: {
+                id: userId,
+                name,
+                email,
+                verified: false,
+            },
+        },
     };
 }
 

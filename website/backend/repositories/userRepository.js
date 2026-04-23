@@ -15,13 +15,15 @@ async function getCompanyByEmail(email) {
 
 async function addCompanyUser({ email, name, passwordHash}) {
     await dbReady;
-    await run(
+    const result = await run(
         `
             INSERT INTO companyx (name, email, pw, verified)
             VALUES (?, ?, ?, 0)
         `,
         [name, email, passwordHash]
     );
+
+    return result.lastID;
 }
 
 async function updateCompanyVerificationByEmail(email, verified) {

@@ -1,4 +1,4 @@
-# Backend Template (Controllers + DB Layer)
+# Backend (Controllers + DB Layer)
 
 This backend is structured as:
 
