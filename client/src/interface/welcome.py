@@ -47,4 +47,3 @@ class welcome_page:
             print("User chose No")
 
         self.mainUI.switchFromWelcomePage()
-

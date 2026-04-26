@@ -4,25 +4,28 @@ import sv_ttk
 import os
 from util.resources import resource_path
 from PIL import Image, ImageTk
+from pathlib import Path
 
 class loadingScreen:
     def __init__(self, mainUI):
         self.uiFrame = tkinter.Frame(mainUI.root)
         # self.uiFrame.pack(fill='both', expand=True)
         self.mainUI = mainUI
+        self.record = True
 
         self.path = "assets\\loadingCircle\\"
         self.filesList = sorted(
-            [files for r,d, files in os.walk(self.path)][0],
-            key= lambda x: int(''.join(filter(str.isdigit,x)))
+            [files for r,d, files in Path(self.path).walk()][0],
+            key= lambda x: int(''.join(filter(str.isdigit,x))) # get all of the numbers fro the file name
         ) #HIDEOUS logic to sort the file names
-        print(self.filesList)
         self.iter = 0
+
         self.loadingImage = tkinter.Label(self.uiFrame)
         self.loadingImage.pack()
-
-        self.record = True
-
+        self.loadingLabel = tkinter.Label(self.uiFrame, text="Verifying, Please wait...", font=("Helvetica", 24, "bold"))
+        self.loadingLabel.pack()
+        self.loadingCircle()
+    # this is all to do animation stuff so far
     def loadingCircle(self):
         self.mainUI.root.update_idletasks()
         self.fileStr = resource_path(

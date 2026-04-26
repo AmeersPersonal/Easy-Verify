@@ -1,7 +1,5 @@
 // import { JSEncrypt } from "jsencrypt";
-import JSEncrypt from "jsencrypt";
-import type { ClientToApp, ServerToClient, CurrentState } from "./states";
-import { responsiveFontSizes } from "@mui/material/styles";
+import type { ClientToApp, ServerToClient } from "./states";
 
 /**
  * The websocket handler won't really contain much of the back and forth from the handshake, this will be done in verification.ts
@@ -84,8 +82,8 @@ export class useWebSocket {
     try {
       const msg = JSON.parse(messageEvent.data)
       console.log(msg);
-      let responseType : string = msg.responseType;
-      let responseData : string = msg.response;
+      const responseType : string = msg.responseType;
+      const responseData : string = msg.response;
       if (typeof responseType === "string" && responseType in this.handlersMap) {
         if (typeof responseData === "string") {
           this.handlersMap[responseType as keyof ServerToClient]?.({ response: responseData });

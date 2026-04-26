@@ -1,33 +1,87 @@
 import { Verifier } from "../features/wsVerification/Verification";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import React from 'react'
+import { useLocation } from "react-router-dom";
+
+
+function getEmail() {
+  const location = useLocation();
+  const locationState = location.state;
+  console.log(locationState?.email);
+  if(!locationState?.email) {alert("No Email Detected, will error out!")}
+  return locationState?.email;
+}
+
+function verifyText(isVerifying, verifyState) {
+  let curText = ""
+  console.log(verifyState)
+  if (!isVerifying) {
+    curText = "Click to Verify";
+  } else {
+    switch (verifyState) {
+      case "keyWait":
+        curText = "Started Verification"
+        break;
+      case "verificationWait":
+        curText = "Waiting for Verification"
+        break;
+      case "done":
+        curText = "✅\nVerification Sucessful!"
+        break;
+      case "fail":
+        curText = "Verification Failed"
+        break;
+      case "error":
+        curText = "Error!"
+        break;
+      default:
+        curText = "Invalid State";
+
+    }
+  }
+  return (
+    <Typography variant="h5">{curText}</Typography>
+  );
+}
+function loadingCircle(isVerifying, verifyState) {
+  let viewable = (verifyState == "keyWait" || verifyState == "verificationWait") && isVerifying;
+  if (viewable) return (<img src="/loading.svg" width={200} height={200} />)
+  return null;
+
+}
+
 
 function WebSocketVerifyPage() {
-  const isVerifying = false;
-  const isSocketOpen = false;
-  const verifyStatus = false;
+  const email = getEmail();
+  const [isVerifying, setIsVerifying] = useState();
+  const [verifyState, setVerifyState] = useState("");
 
   const verifier = useRef(null);
 
   function handleSubmit(event) {
     event.preventDefault();
-
+    setIsVerifying(true);
     try {
-      verifier.current = new Verifier();
       verifier.current.startConnect();
+
       window.location.href = "easy-verify://verifyDemoClient";
 
-    } catch (error){
+    } catch (error) {
       console.log(error);
     }
 
   }
   useEffect(() => {
-
-  }, [verifier.current]);
+    verifier.current = new Verifier("ws://localhost:8765", {
+      email: email,
+      callback_url: "http://localhost:8000/api/auth/"
+    });
+    const subscribe = verifier.current?.subscribe(setVerifyState);
+    return subscribe;
+  }, []);
 
   return (
     <Box
@@ -40,14 +94,9 @@ function WebSocketVerifyPage() {
       }}
     >
       <img src="/icon.png" width={200} height={200} />
+      <Typography variant="h5">{email}</Typography>
       <Typography variant="h4">Access Content Below</Typography>
-      {isVerifying &&
-        isSocketOpen &&
-        (verifyStatus ? (
-          <Typography variant="h6">✅</Typography>
-        ) : (
-          <img src="/loading.svg" width={200} height={200} />
-        ))}
+      {loadingCircle(isVerifying, verifyState)}
 
       <Box
         component="form"
@@ -63,22 +112,7 @@ function WebSocketVerifyPage() {
         <Button type="submit" variant="contained" size="large">
           Verify
         </Button>
-
-        {isVerifying ? (
-          verifyStatus ? (
-            <Typography variant="body1" color="success.main">
-              Success!
-            </Typography>
-          ) : (
-            <Typography variant="body1" color="text.secondary">
-              Verifying...
-            </Typography>
-          )
-        ) : (
-          <Typography variant="body1" color="primary">
-            Click to Verify
-          </Typography>
-        )}
+        {verifyText(isVerifying, verifyState)}
       </Box>
     </Box>
   );

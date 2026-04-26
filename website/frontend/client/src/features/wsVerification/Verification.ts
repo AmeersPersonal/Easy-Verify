@@ -1,16 +1,12 @@
 import { useWebSocket } from "./WebSocketHandler";
 import JSEncrypt from "jsencrypt";
 
-import { ClientToApp, ServerToClient, CurrentState } from "./states";
-import { JSXElementConstructor } from "react";
+import { CurrentState } from "./states";
 // TODO: add listeners for UI
 
 type User = {
-  first_name?: string;
-  last_name?: string;
-  oAuthToken?: string;
+  email?: string;
   callback_url?: string;
-  client_id?: string;
 };
 
 function isUser(value: unknown): value is User {
@@ -25,35 +21,29 @@ function isUser(value: unknown): value is User {
   //
   // */
   return (
-    (v.first_name === undefined || typeof v.first_name === "string") &&
-    (v.last_name === undefined || typeof v.last_name === "string") &&
-    (v.oAuthToken === undefined || typeof v.oAuthToken === "string") &&
-    (v.callback_url === undefined || typeof v.callback_url === "string") &&
-    (v.client_id === undefined || typeof v.client_id === "string")
+    (v.email === undefined || typeof v.callback_url === "string") &&
+    (v.callback_url === undefined || typeof v.callback_url === "string")
   );
 }
 
-
+type Listener = (state: CurrentState) => void;
 export class Verifier {
   currentUser: User;
   socket: useWebSocket;
   state: CurrentState = "keyWait";
+  private listeners = new Set<Listener>();
 
   constructor(
     url: string = "ws://localhost:8765",
-    apiUrl = "TEST",
     newUser?: User,
   ) {
     this.currentUser = isUser(newUser)
       ? (newUser as User)
       : {
-          first_name: "John",
-          last_name: "Doe",
-          oAuthToken: "TEST",
-          callback_url: apiUrl,
-          client_id: "TEST",
-        };
-
+        email: "example.com",
+        callback_url: "TEST"
+      };
+    this.setState("keyWait");
     this.socket = new useWebSocket(url);
 
     //setting up handlers for the socket, rn we are just sending a response
@@ -61,17 +51,17 @@ export class Verifier {
       if (this.state !== "keyWait") {
         throw new Error("Invalid State");
       }
-      let encrypt: JSEncrypt = new JSEncrypt();
-      let publicKey: string = data["response"];
+      const encrypt: JSEncrypt = new JSEncrypt();
+      const publicKey: string = data["response"];
       encrypt.setPublicKey(publicKey);
 
-      let encryptedData: string | false = encrypt.encrypt(
+      const encryptedData: string | false = encrypt.encrypt(
         JSON.stringify(this.currentUser),
       );
       if (encryptedData === false) {
         throw new Error("Encryption Error");
       }
-      this.state = "verificationWait";
+      this.setState("verificationWait")
 
       this.socket.send("encrypted_string", encryptedData);
     });
@@ -80,11 +70,30 @@ export class Verifier {
       if (this.state !== "verificationWait") {
         throw new Error("verifystatus error");
       }
-      let status: string = response["response"];
+      const status: string = response["response"];
       console.log(status);
-      this.state = status === "OK" ? "done" : status === "FAIL" ? "fail" : "error";
+      this.setState(status === "OK" ? "done" : status === "FAIL" ? "fail" : "error");
     });
+
   }
+
+  //just tracking updates for the current state so the UI updates to match
+  setState(newState: CurrentState) {
+    this.state = newState;
+    this.listeners.forEach((listener) => listener(this.state));   
+  }
+
+  getState() {
+    return this.state;
+  }
+
+  subscribe(listener: Listener) {
+    this.listeners.add(listener);
+    listener(this.state);
+    console.log(listener);
+    return () => {this.listeners.delete(listener)};
+  }
+
   startConnect() {
     this.socket.connect();
   }

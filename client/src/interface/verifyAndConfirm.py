@@ -3,6 +3,7 @@ from tkinter import ttk, messagebox
 import cv2
 import numpy as np
 from PIL import Image, ImageTk
+import tk_async_execute as tae
 
 from util.resources import resource_path
 from util.webSocketHandler import openSocket, stopSocket
@@ -62,16 +63,16 @@ class verifyUI:
         goBack.pack(side="top", anchor="nw")
     def runWebsocket(self):
         print("eh")
-        # tae.async_execute(
-        #     openSocket(), visible=False, pop_up=False, master=self.mainUI.root
-        # )
+        tae.async_execute(
+            openSocket(), visible=False, pop_up=False, master=self.mainUI.root
+        )
 
     def cameraCapture(self):
         try:
 
             ret, frame = self.vid.read() #we care about the boolean value
-            
-            if not ret or frame is None: 
+
+            if not ret or frame is None:
                 raise Exception()
             self.currentImage = frame
             imageDisplay = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
@@ -87,10 +88,10 @@ class verifyUI:
 
         except Exception as e:
             messagebox.showerror("No Camera Found", "Camera not Found. Please close any apps using the camera, or check if it's disabled by the device."
-                                   " Refresh the website to reverify.") 
+                                   " Refresh the website to reverify.")
             self.mainUI.root.destroy()
-           
-       
+
+
 
     def cameraInit(self):
         camWidth, camHeight = 600, 400
@@ -133,6 +134,7 @@ class verifyUI:
             case 2:
                 self.img3 = self.currentImage.copy()
                 print("img3")
+
                 startVerification(self.img1, self.img2, self.img3, self)
                 # TODO: do the verification here
             case _:
@@ -181,7 +183,8 @@ class confirmScreen:
     def confirm(self):
         self.mainUI.verifyInterface.confirmImage()
         print("wow")
-        self.mainUI.switchUI(self.uiFrame, self.mainUI.verifyInterface.uiFrame)
+        if(self.mainUI.verifyInterface.verificationState <= 2):
+            self.mainUI.switchUI(self.uiFrame, self.mainUI.verifyInterface.uiFrame)
 
     def back(self):
         self.mainUI.verifyInterface.record = True

@@ -4,6 +4,7 @@ import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
+import React from 'react';
 
 export default function LoginForm() {
     const [email, setEmail] = useState("");
@@ -28,7 +29,7 @@ export default function LoginForm() {
                 if (payload?.token) {
                     localStorage.setItem("token", payload.token);
                 }
-                navigate("/verify");
+                navigate("/verify", { state: { email } });
                 return;
             }
 
