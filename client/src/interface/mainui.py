@@ -5,16 +5,18 @@ import darkdetect
 import cv2
 import numpy as np
 import sv_ttk
-# import tk_async_execute as tae
+import tk_async_execute as tae
 from PIL import Image, ImageTk
 
 from util.resources import resource_path
 from util.webSocketHandler import openSocket, stopSocket
 
 
-from verification.verifyAndConfirm import verifyUI, confirmScreen
-from verification.welcome import welcome_page
-from verification.settings import settingsUI
+from interface.verifyAndConfirm import verifyUI, confirmScreen
+from interface.welcome import welcome_page
+from interface.settings import settingsUI
+from interface.loadingScreen import loadingScreen
+from interface.doneScreen import doneScreen
 
 
 class mainUI:
@@ -42,20 +44,23 @@ class mainUI:
         self.settingsInterface = settingsUI(self)
         self.welcomeInterface = welcome_page(self)
         self.confirmInterface = confirmScreen(self)
+        self.loadingScreen = loadingScreen(self)
+        self.doneInterface = doneScreen(self)
 
     #  self.signInInterface = sign_in(self)
 
     # make 3 objects for each ui, then switch between them all
     # start with the verifyui
     def runUI(self):
-        # self.switchVerify() # we start with the verification ui,
+        # self.switchUI(self.settingsInterface.uiFrame, self.loadingScreen.uiFrame)
+        # self.loadingScreen.loadingCircle()
         self.switchToWelcomePage()
-        # tae.start()
+        tae.start()
         self.root.protocol(
             "WM_DELETE_WINDOW", self.exitProgram
         )  # cleanup the websocket after closing the application
         self.root.mainloop()
-        # tae.stop()
+        tae.stop()
 
 
 
@@ -98,3 +103,9 @@ class mainUI:
     # def switchFromWelcomeToSignIn(self):
     #     self.switchUI(self.welcomeInterface.uiFrame, self.signInInterface.uiFrame)
     #     print("Switching to sign in page")
+    def switchToLoadingUI(self):
+        self.switchUI(self.confirmInterface.uiFrame, self.loadingScreen.uiFrame)
+        print("switching to loading interface")
+    def switchToCompleteUi(self):
+        self.switchUI(self.verifyInterface.uiFrame, self.doneInterface.uiFrame)
+        self.switchUI(self.loadingScreen.uiFrame, self.doneInterface.uiFrame)

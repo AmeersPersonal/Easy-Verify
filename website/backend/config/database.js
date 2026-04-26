@@ -4,13 +4,8 @@ const path = require("path");
 const sqlite3 = require("sqlite3").verbose();
 
 const defaultDbPath = path.resolve(
-    __dirname,
-    "..",
-    "..",
-    "..",
-    "client",
-    "src",
-    "util",
+  __dirname,
+  "..",
     "db",
     "easyverify.db"
 );

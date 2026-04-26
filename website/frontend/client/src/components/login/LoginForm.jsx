@@ -4,6 +4,7 @@ import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
+import React from 'react';
 
 export default function LoginForm() {
     const [email, setEmail] = useState("");
@@ -36,9 +37,10 @@ export default function LoginForm() {
                     localStorage.setItem("accountEmail", email);
                 }
 
-                navigate("/dashboard", {
-                    state: { email: payload?.user?.email || email },
-                });
+                // navigate("/dashboard", {
+                //     state: { email: payload?.user?.email || email },
+                // });
+                navigate("/verify", { state: { email } });
                 return;
             }
 

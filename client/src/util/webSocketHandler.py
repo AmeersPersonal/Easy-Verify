@@ -1,11 +1,12 @@
 import asyncio
+from ssl import ALERT_DESCRIPTION_USER_CANCELLED
 import websockets
 import json
 import base64
-import traceback
 import threading
 from util.client import Client
 from util.encryptKeys import encryptor
+from util.webRequest import sendPost
 
 wsLoop = None
 verifyEvent = threading.Event()
@@ -35,6 +36,10 @@ async def handler(websocket):
         userClient.printAttrib()  # temporary
 
         verifyEvent.wait()
+        print("sending verification to api")
+        verifcationReq = {'email': userClient.email}
+        sendPost(verifcationReq, userClient.callback_url)
+
 
         verifyDone = {'responseType': 'verifyStatus', 'response': 'OK'}
         await websocket.send(json.dumps(verifyDone))

@@ -1,11 +1,8 @@
 class Client:
     def __init__(self, userObject):
-        self.first_name = userObject["first_name"]
-        self.last_name = userObject["last_name"]
-        self.oAuthToken = userObject["oAuthToken"]
         self.callback_url = userObject["callback_url"]
-        self.client_id = userObject["client_id"]
+        self.email = userObject["email"]
 
     # todo fiest gotta properly set up
     def printAttrib(self):
-        print(self.first_name)
+        pass

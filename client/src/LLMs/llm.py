@@ -1,15 +1,27 @@
-from deepface import DeepFace
 import cv2
 import easyocr
 import re
 from datetime import datetime
 import os
 import traceback
+import threading
 
 #TODO:
 # run llm in different thread than main
 # initialize llm in different thread than main, just so the program doesn't lag during verification process
 # automatically include weights in the build folder, so it doesn't remake the deepface folder every time we install
+
+DeepFace = None
+
+importEvent = threading.Event()
+
+def importAI():
+    print("importing llm")
+    global DeepFace
+    from deepface import DeepFace
+    importEvent.set()
+    print("imported LLM")
+
 
 # we should use this for when to store the photo of the person and when to delete it, we can also use it to store the photos of the ID for a short period of time
 PHOTO_DIR = os.path.dirname(os.path.realpath(__file__)) + "/temp_photos"
@@ -23,6 +35,7 @@ Instead of extracting img from user idea lets have them take or upload a close u
 # TODO: how do we define if it failed for some reason?
 # rn i want to use -1 as the fail code bc we shouldn't have a negative age, if we do we are cooked
 FAILED_STATUS_CODE = -1
+ERROR_STATUS_CODE = -2
 
 
 def estimate_age(img1, img2, img3) -> int:
@@ -30,13 +43,13 @@ def estimate_age(img1, img2, img3) -> int:
     img paramters are img paths
     The AI will exmaine 3 images and will give an estimate age of the user
     """
-
+    #wait until the llm is imported
+    importEvent.wait()
+    counter = 0
     img_list = [img1, img2, img3]
     estimated_age = []
-
     try:
         for img in img_list:
-            counter = 0
             analysis = DeepFace.analyze(
                 img_path=img, actions=["age"], enforce_detection=False, silent=True, detector_backend="retinaface", align =True
             )
@@ -48,22 +61,24 @@ def estimate_age(img1, img2, img3) -> int:
                     print("Multiple faces detected, skipping image.")
                     raise ValueError("Multiple faces detected")
                 age = analysis[0]["age"]
+                if analysis[0]["face_confidence"] < 0.5:
+                    raise ValueError("No Face Detected")
                 estimated_age.append(age)
                 counter += 1
-                
             else:
                 counter += 1
                 age = analysis["age"]
                 estimated_age.append(age)
 
-
-    except ValueError:
-        print("VALUE ERROR")
-        pass
+    except ValueError as e:
+        print(e)
+        print(counter)
+        raise ValueError(counter) # return the image that was bad as a value error
     except Exception as e:
         print("UNKNOWN ERROR")
         traceback.print_exc()
         print(e)
+        raise e
         pass
 
     if not estimated_age or len(estimated_age) != len(img_list):
@@ -73,7 +88,7 @@ def estimate_age(img1, img2, img3) -> int:
 
     final_guess = round(sum(estimated_age) / len(estimated_age))
 
-    return final_guess - 7
+    return final_guess # i got rid of the age subtracting thing for the moment, ill add it back later
 
 
 def verify_user_id(img1, img2) -> bool:
