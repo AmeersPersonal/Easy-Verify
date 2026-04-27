@@ -5,7 +5,7 @@ from datetime import datetime
 import os
 import traceback
 import threading
-
+from util.collectdeepface import initialize_weights
 #TODO:
 # run llm in different thread than main
 # initialize llm in different thread than main, just so the program doesn't lag during verification process
@@ -17,6 +17,8 @@ importEvent = threading.Event()
 
 def importAI():
     print("importing llm")
+    initialize_weights()
+
     global DeepFace
     from deepface import DeepFace
     importEvent.set()

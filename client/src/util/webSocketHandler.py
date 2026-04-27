@@ -6,12 +6,12 @@ import base64
 import threading
 from util.client import Client
 from util.encryptKeys import encryptor
-from util.webRequest import sendPost
+from util.webrequest import sendPost
 
 wsLoop = None
 verifyEvent = threading.Event()
 isConnected = False
-
+verificationStatus = False
 
 async def handler(websocket):
     try:
@@ -36,8 +36,10 @@ async def handler(websocket):
         userClient.printAttrib()  # temporary
 
         verifyEvent.wait()
+
+        global verificationStatus
         print("sending verification to api")
-        verifcationReq = {'email': userClient.email}
+        verifcationReq = {'userId': userClient.userID, 'verified': verificationStatus}
         sendPost(verifcationReq, userClient.callback_url)
 
 
@@ -47,6 +49,8 @@ async def handler(websocket):
     except ValueError:
         print("Key Error")
     except Exception as err:
+        verifyError = {'responseType': 'verifyStatus', 'response': 'FAIL'}
+        await websocket.send(json.dumps(verifyError))
         print("Unexpected error")
         print(err)
     finally:
@@ -73,8 +77,10 @@ def stopSocket():
         wsLoop.call_soon_threadsafe(wsLoop.stop)
 
 
-def finishVerify():
+def finishVerify(status):
     if wsLoop and wsLoop.is_running() and isConnected:
+        global verificationStatus
+        verificationStatus = status
         verifyEvent.set()
     if not isConnected:
         print("Nothing connected")

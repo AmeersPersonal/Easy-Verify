@@ -1,6 +1,6 @@
 import sys
 import traceback
-
+import os
 # from util.db.database import Database
 import time
 from interface.mainui import mainUI
@@ -8,6 +8,7 @@ from LLMs.llm import importAI
 import threading
 
 def main():
+    os.environ["TF_USE_LEGACY_KERAS"] = "1" #Force use old keras for the algorithm to run properly
     #import the llm in a seperate thread
     aiThread = threading.Thread(target=importAI, daemon=True)
     aiThread.start()

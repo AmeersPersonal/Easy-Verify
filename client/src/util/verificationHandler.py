@@ -60,6 +60,7 @@ def startVerification(img1, img2, img3, callUI):
     #handle the thread events
 
     print(result)
-    finishVerify()  # maybe pass estimated age here
+    global verificationSucess
+    finishVerify(verificationSucess)  # maybe pass estimated age here
     callUI.mainUI.switchToCompleteUi()
     callUI.mainUI.doneInterface.setStatus("Verified Sucessfully")

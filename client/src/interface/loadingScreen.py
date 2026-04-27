@@ -15,7 +15,7 @@ class loadingScreen:
 
         self.path = "assets\\loadingCircle\\"
         self.filesList = sorted(
-            [files for r,d, files in Path(self.path).walk()][0],
+            [files for r,d, files in Path(resource_path(self.path)).walk()][0],
             key= lambda x: int(''.join(filter(str.isdigit,x))) # get all of the numbers fro the file name
         ) #HIDEOUS logic to sort the file names
         self.iter = 0

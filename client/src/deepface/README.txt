@@ -1,0 +1,1 @@
+Ok so since the deepface weights are VERY big, you have to manually copy and paste them here when you build, or it might just copy and paste on its own 
